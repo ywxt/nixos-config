@@ -10,7 +10,7 @@
       accessibility.ui_scale = 1.0;
 
       shell = {
-        font_family = "JetBrainsMono Nerd Font";
+        font_family = "sans-serif";
         time_format = "{:%H:%M}";
         date_format = "%A, %x";
         telemetry_enabled = false;
@@ -78,7 +78,7 @@
         margin_ends = 5;
         reserve_space = true;
         start = [ "launcher" "workspaces" ];
-        center = [ "clock" "media" ];
+        center = [ "media" ];
         end = [
           "tray"
           "notifications"
@@ -86,6 +86,7 @@
           "network"
           "bluetooth"
           "volume"
+          "clock"
           "control-center"
           "session"
         ];

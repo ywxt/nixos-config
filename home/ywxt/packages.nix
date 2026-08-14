@@ -9,7 +9,6 @@
     cliphist
     curl
     firefox
-    flclash
     git-credential-oauth
     imv
     jdk21
@@ -21,17 +20,19 @@
     python3
     rustup
     telegram-desktop
+    (thunar.override {
+      thunarPlugins = [
+        thunar-archive-plugin
+        thunar-volman
+      ];
+    })
     typst
     unzip
     uv
-    uwsm
     vlc
     vscode
     wget
     wl-clipboard
     xwayland-satellite
   ];
-
-  xdg.configFile."autostart/flclash.desktop".source =
-    "${pkgs.flclash}/share/applications/flclash.desktop";
 }

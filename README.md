@@ -93,7 +93,7 @@ Install directly from the RAM-backed configuration. It is used only to build the
 initial system and is intentionally not copied to `/etc/nixos`.
 
 ```bash
-nix flake check path:/tmp/nixos-config
+nix --extra-experimental-features 'nix-command flakes' flake check path:/tmp/nixos-config
 nixos-install --flake /tmp/nixos-config#ywxt-ws
 nixos-enter --root /mnt -c 'passwd ywxt'
 reboot

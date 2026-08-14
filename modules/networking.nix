@@ -1,9 +1,18 @@
+{pkgs, ... }:
+
 {
   networking = {
     networkmanager.enable = true;
     firewall.enable = true;
-    firewall.checkReversePath = false;
-    firewall.trustedInterfaces = [ "tun0" "utun+"];
+    firewall.checkReversePath = "loose";
+    firewall.trustedInterfaces = [ "Mihomo" ];
+  };
+
+  programs.clash-verge = {
+    enable = true;
+    package = pkgs.clash-verge-rev;
+    autoStart = true;
+    serviceMode = true;
   };
 
   hardware.bluetooth = {
@@ -11,6 +20,6 @@
     powerOnBoot = true;
   };
 
-  services.blueman.enable = true;
   services.timesyncd.enable = true;
+
 }

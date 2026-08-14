@@ -3,13 +3,7 @@
 {
   programs.niri.enable = true;
 
-  programs.thunar = {
-    enable = true;
-    plugins = with pkgs; [
-      thunar-archive-plugin
-      thunar-volman
-    ];
-  };
+  programs.uwsm.enable = true;
 
   programs.noctalia = {
     enable = true;
@@ -21,19 +15,6 @@
   services.tumbler.enable = true;
   services.udisks2.enable = true;
   security.polkit.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-  };
-
-  environment.sessionVariables = {
-    NIXOS_OZONE_WL = "1";
-    ELECTRON_OZONE_PLATFORM_HINT = "auto";
-    QT_QPA_PLATFORM = "wayland;xcb";
-    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    _JAVA_AWT_WM_NONREPARENTING = "1";
-  };
 
   fonts = {
     fontDir.enable = true;

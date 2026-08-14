@@ -10,6 +10,7 @@
     ./noctalia.nix
     ./qt.nix
     ./shell.nix
+    ./xdg.nix
   ];
 
   home = {

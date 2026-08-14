@@ -6,8 +6,8 @@
       enable = true;
       interactiveShellInit = ''
         if status is-login
-          if uwsm check may-start; and uwsm select
-            exec uwsm start default
+          if uwsm check may-start
+            exec uwsm start
           end
         end
       '';
@@ -26,6 +26,8 @@
     git = {
       enable = true;
       lfs.enable = true;
+      settings.user.name = "ywxt";
+      settings.user.email = "ywxtcwh@gmail.com";
       settings.credential.helper = [ "oauth" ];
     };
     kitty = {
@@ -43,8 +45,13 @@
 
   home.sessionPath = [ "$HOME/.cargo/bin" "$HOME/.local/bin" ];
   home.sessionVariables = {
-    EDITOR = "nvim";
-    TERMINAL = "kitty";
     BROWSER = "firefox";
+    EDITOR = "nvim";
+    ELECTRON_OZONE_PLATFORM_HINT = "auto";
+    NIXOS_OZONE_WL = "1";
+    QT_QPA_PLATFORM = "wayland;xcb";
+    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+    TERMINAL = "kitty";
+    _JAVA_AWT_WM_NONREPARENTING = "1";
   };
 }
