@@ -9,6 +9,11 @@
     settings = {
       accessibility.ui_scale = 1.0;
 
+      plugins = {
+        enabled = [ "noctalia/wallhaven" ];
+        auto_update = true;
+      };
+
       shell = {
         font_family = "sans-serif";
         time_format = "{:%H:%M}";
@@ -69,6 +74,24 @@
         };
       };
 
+      nightlight = {
+        enabled = true;
+        force = false;
+        temperature_day = 6500;
+        temperature_night = 4000;
+      };
+
+      widget.wallhaven.type = "noctalia/wallhaven:wallhaven";
+      widget.gpu = {
+        type = "sysmon";
+        stat = "gpu_usage";
+      };
+      widget.disk = {
+        type = "sysmon";
+        stat = "disk_used_pct";
+        path = "/";
+      };
+
       bar.main = {
         position = "top";
         thickness = 34;
@@ -77,10 +100,11 @@
         margin_edge = 5;
         margin_ends = 5;
         reserve_space = true;
-        start = [ "launcher" "workspaces" ];
+        start = [ "launcher" "workspaces" "cpu"];
         center = [ "media" ];
         end = [
           "tray"
+          "wallhaven"
           "notifications"
           "clipboard"
           "network"
