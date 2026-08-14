@@ -2,6 +2,8 @@
   networking = {
     networkmanager.enable = true;
     firewall.enable = true;
+    firewall.checkReversePath = false;
+    firewall.trustedInterfaces = [ "tun0" "utun+"];
   };
 
   hardware.bluetooth = {
