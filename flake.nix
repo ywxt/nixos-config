@@ -13,6 +13,11 @@
       url = "github:noctalia-dev/noctalia";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rime-huma = {
+      url = "github:ywxt/rime-huma";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ nixpkgs, home-manager, noctalia, ... }: {

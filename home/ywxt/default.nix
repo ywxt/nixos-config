@@ -3,6 +3,7 @@
 {
   imports = [
     inputs.noctalia.homeModules.default
+    ./input-method.nix
     ./packages.nix
     ./mime.nix
     ./niri.nix

@@ -56,11 +56,28 @@
         "type": "github"
       }
     },
+    "rime-huma": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779328033,
+        "narHash": "sha256-B2lqx13BQpPhn+yhQ3TapALab0hiMundopriyIRVOnk=",
+        "owner": "ywxt",
+        "repo": "rime-huma",
+        "rev": "6657afe00b250f83a38f7de14c85336fb747de6d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ywxt",
+        "repo": "rime-huma",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
-        "noctalia": "noctalia"
+        "noctalia": "noctalia",
+        "rime-huma": "rime-huma"
       }
     }
   },

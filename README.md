@@ -14,7 +14,9 @@ hardware and a clean installation on `/dev/nvme0n1`.
 - Noctalia-native lock, idle and screen-off handling (no swayidle)
 - Noctalia-native brightness handling (no explicit brightnessctl package)
 - FlClash from `pkgs.flclash`, including XDG autostart
-- PipeWire, Fcitx5 + Rime, NetworkManager, Bluetooth and Wayland portals
+- PipeWire, NetworkManager, Bluetooth and Wayland portals
+- Home Manager-managed Fcitx5 with the pinned `ywxt/rime-huma` scheme,
+  librime-lua support and Fluent light/dark themes
 - Thunar with archive integration, removable-media support, GVfs, UDisks2 and
   thumbnail generation
 - Declarative MIME associations matching the current Firefox, imv, VLC, Ark,
@@ -31,15 +33,34 @@ managed by Home Manager.
 ## Destructive clean installation
 
 The following erases `/dev/nvme0n1` completely. Confirm the device name from the
-NixOS installer with `lsblk` before running anything.
+NixOS installer with `lsblk` before running anything. Boot the installer in UEFI
+mode and put a copy of this Flake somewhere that will survive erasing the target
+disk, such as a second USB drive, another disk or a remote Git repository.
+
+From the live installer's normal shell, first copy or clone the configuration to
+the installer's RAM-backed `/tmp`. For example:
+
+```bash
+cp -a /path/on/another-device/nixos-config /tmp/nixos-config
+# Alternatively: git clone <repository-url> /tmp/nixos-config
+test -f /tmp/nixos-config/flake.nix
+```
+
+Then become root, verify UEFI mode and inspect the target disk. Stop if the UEFI
+check fails or `/dev/nvme0n1` is not the intended disk.
 
 ```bash
 sudo -i
+test -d /sys/firmware/efi/efivars
+lsblk -o NAME,SIZE,TYPE,FSTYPE,LABEL,MOUNTPOINTS /dev/nvme0n1
+
 wipefs -a /dev/nvme0n1
 parted /dev/nvme0n1 -- mklabel gpt
 parted /dev/nvme0n1 -- mkpart ESP fat32 1MiB 1025MiB
 parted /dev/nvme0n1 -- set 1 esp on
 parted /dev/nvme0n1 -- mkpart primary 1025MiB 100%
+partprobe /dev/nvme0n1
+udevadm settle
 
 mkfs.fat -F 32 -n boot /dev/nvme0n1p1
 mkfs.btrfs -f -L nixos /dev/nvme0n1p2
@@ -60,10 +81,20 @@ mount -o subvol=@nix,compress=zstd:3,noatime,discard=async \
 mount -o fmask=0077,dmask=0077 /dev/disk/by-label/boot /mnt/boot
 ```
 
-Copy `~/nixos-config` to `/mnt/etc/nixos`, then install:
+Verify that every target filesystem is mounted at the location expected by
+`hosts/ywxt-ws/hardware-configuration.nix`:
 
 ```bash
-cp -a "$HOME/nixos-config/." /mnt/etc/nixos/
+findmnt -R /mnt
+lsblk -f /dev/nvme0n1
+```
+
+Copy the RAM-backed configuration into the new system and install. Because
+`sudo -i` changes `$HOME` to `/root`, use the explicit `/tmp/nixos-config` path.
+
+```bash
+cp -a /tmp/nixos-config/. /mnt/etc/nixos/
+nix flake check path:/mnt/etc/nixos
 nixos-install --flake /mnt/etc/nixos#ywxt-ws
 nixos-enter --root /mnt -c 'passwd ywxt'
 reboot
