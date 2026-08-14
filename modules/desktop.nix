@@ -45,7 +45,7 @@
       nerd-fonts.jetbrains-mono
       nerd-fonts.symbols-only
       material-symbols
-      lxgw-wenkai
+      lxgw-wenkai-tc
     ];
   };
 }
