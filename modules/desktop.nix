@@ -18,7 +18,23 @@
 
   fonts = {
     fontDir.enable = true;
+    fontconfig.defaultFonts = {
+      sansSerif = [
+        "Noto Sans"
+        "Noto Sans CJK SC"
+      ];
+      serif = [
+        "Noto Serif"
+        "Noto Serif CJK SC"
+      ];
+      monospace = [
+        "JetBrain Mono"
+        "Noto Sans Mono CJK SC"
+      ];
+    };
     packages = with pkgs; [
+      iosevka
+      jetbrains-mono
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-cjk-serif
