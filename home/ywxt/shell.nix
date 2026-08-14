@@ -7,7 +7,8 @@
       interactiveShellInit = ''
         if status is-login
           if uwsm check may-start
-            exec uwsm start
+            exec uwsm select
+            exec uwsm start default
           end
         end
       '';
