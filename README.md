@@ -73,7 +73,7 @@ umount /mnt
 
 mount -o subvol=@,compress=zstd:3,noatime,discard=async \
   /dev/disk/by-label/nixos /mnt
-mkdir -p /mnt/{boot,home,nix,etc/nixos}
+mkdir -p /mnt/{boot,home,nix}
 mount -o subvol=@home,compress=zstd:3,noatime,discard=async \
   /dev/disk/by-label/nixos /mnt/home
 mount -o subvol=@nix,compress=zstd:3,noatime,discard=async \
@@ -89,16 +89,28 @@ findmnt -R /mnt
 lsblk -f /dev/nvme0n1
 ```
 
-Copy the RAM-backed configuration into the new system and install. Because
-`sudo -i` changes `$HOME` to `/root`, use the explicit `/tmp/nixos-config` path.
+Install directly from the RAM-backed configuration. It is used only to build the
+initial system and is intentionally not copied to `/etc/nixos`.
 
 ```bash
-cp -a /tmp/nixos-config/. /mnt/etc/nixos/
-nix flake check path:/mnt/etc/nixos
-nixos-install --flake /mnt/etc/nixos#ywxt-ws
+nix flake check path:/tmp/nixos-config
+nixos-install --flake /tmp/nixos-config#ywxt-ws
 nixos-enter --root /mnt -c 'passwd ywxt'
 reboot
 ```
+
+After rebooting, log in as `ywxt` and clone the configuration repository to its
+permanent maintenance location:
+
+```bash
+git clone <repository-url> "$HOME/nixos-config"
+nix flake check "path:$HOME/nixos-config"
+sudo nixos-rebuild switch --flake "$HOME/nixos-config#$(hostname)"
+```
+
+Replace `<repository-url>` with the actual Git URL before following these
+instructions. The initial installation and the cloned repository should point at
+the same revision to avoid an unexpected change during the first rebuild.
 
 The hostname-specific output remains `ywxt-ws`, while the maintenance alias
 selects it dynamically with `hostname`. When adding new files, remember that
