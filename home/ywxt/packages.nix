@@ -1,5 +1,9 @@
 { pkgs, ... }:
 
+let
+  obinskit = pkgs.callPackage ../../pkgs/obinskit.nix { };
+in
+
 {
   home.packages = with pkgs; [
     ark
@@ -17,6 +21,7 @@
     neovim
     nwg-look
     obs-studio
+    obinskit
     python3
     rustup
     telegram-desktop
