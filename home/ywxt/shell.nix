@@ -7,8 +7,9 @@
       interactiveShellInit = ''
         if status is-login
           if uwsm check may-start
-            exec uwsm select
-            exec uwsm start default
+            if uwsm select
+              exec uwsm start default
+            end
           end
         end
       '';
@@ -40,9 +41,23 @@
       settings = {
         confirm_os_window_close = 0;
         enable_audio_bell = false;
-        include = "current-theme.conf";
       };
     };
+  };
+
+  xdg.configFile = {
+    "kitty/dark-theme.auto.conf".text = ''
+      include ${pkgs.kitty-themes}/share/kitty-themes/themes/Catppuccin-Mocha.conf
+      background_opacity 0.88
+    '';
+    "kitty/light-theme.auto.conf".text = ''
+      include ${pkgs.kitty-themes}/share/kitty-themes/themes/Catppuccin-Latte.conf
+      background_opacity 0.88
+    '';
+    "kitty/no-preference-theme.auto.conf".text = ''
+      include ${pkgs.kitty-themes}/share/kitty-themes/themes/Catppuccin-Latte.conf
+      background_opacity 0.88
+    '';
   };
 
   home.sessionPath = [ "$HOME/.cargo/bin" "$HOME/.local/bin" ];

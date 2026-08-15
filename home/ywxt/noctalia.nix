@@ -36,7 +36,7 @@
         builtin = "Noctalia";
         templates = {
           enable_builtin_templates = true;
-          builtin_ids = [ "gtk3" "gtk4" "qt" "kitty" ];
+          builtin_ids = [ "gtk3" "gtk4" "qt" ];
         };
       };
 
