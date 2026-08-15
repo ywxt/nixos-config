@@ -1,7 +1,10 @@
-{ config, pkgs, ... }:
+{ config, inputs, pkgs, ... }:
 
 let
-  colloidKvantum = pkgs.callPackage ../../pkgs/colloid-kvantum.nix { };
+  colloidKvantum = pkgs.callPackage ../../pkgs/colloid-kvantum.nix {
+    src = inputs.colloid-kde;
+    version = inputs.colloid-kde.shortRev or "unstable";
+  };
 
   qtctConfig = version: ''
     [Appearance]

@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "colloid-kde": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1751784383,
+        "narHash": "sha256-CWa6HnMP042jh573/x7WxYyRScN/l+jjCasiaBODljA=",
+        "owner": "vinceliuice",
+        "repo": "Colloid-kde",
+        "rev": "b768904d10ba9fcb95abfb59538eab100b1fed1e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vinceliuice",
+        "repo": "Colloid-kde",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -22,11 +38,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1786599213,
-        "narHash": "sha256-yNJd40f11EzXBjSByCB7IPpeFFAdeoSKKM67dGkfFoU=",
+        "lastModified": 1786582854,
+        "narHash": "sha256-mzjAhc8xB2gbNwKM3sHVx8ztdl9L/ulytpRSaS4QPyc=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0e251e24a4f24e036a084b6b4b2d2491af4167f4",
+        "rev": "1e544d5f3944e555dd7919258882562e616407a8",
         "type": "github"
       },
       "original": {
@@ -74,6 +90,7 @@
     },
     "root": {
       "inputs": {
+        "colloid-kde": "colloid-kde",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "noctalia": "noctalia",

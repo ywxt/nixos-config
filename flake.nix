@@ -18,6 +18,11 @@
       url = "github:ywxt/rime-huma";
       flake = false;
     };
+
+    colloid-kde = {
+      url = "github:vinceliuice/Colloid-kde";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ nixpkgs, home-manager, noctalia, ... }: {

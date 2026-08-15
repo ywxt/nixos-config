@@ -28,7 +28,7 @@
         "Noto Serif CJK SC"
       ];
       monospace = [
-        "JetBrain Mono"
+        "JetBrains Mono"
         "Noto Sans Mono CJK SC"
       ];
     };
@@ -39,7 +39,6 @@
       noto-fonts-cjk-sans
       noto-fonts-cjk-serif
       noto-fonts-color-emoji
-      nerd-fonts.jetbrains-mono
       nerd-fonts.symbols-only
       material-symbols
       lxgw-wenkai-tc

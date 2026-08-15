@@ -38,6 +38,10 @@
       experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
       trusted-users = [ "root" "ywxt" ];
+      substituters = [
+        "https://mirrors.cernet.edu.cn/nix-channels/store"
+        "https://cache.nixos.org/"
+      ];
     };
     gc = {
       automatic = true;
