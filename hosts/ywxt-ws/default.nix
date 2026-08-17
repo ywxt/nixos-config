@@ -10,6 +10,7 @@
     ../../modules/desktop.nix
     ../../modules/gaming.nix
     ../../modules/development.nix
+    ../../modules/monitor.nix
   ];
 
   networking.hostName = "ywxt-ws";

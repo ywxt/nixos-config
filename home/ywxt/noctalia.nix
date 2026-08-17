@@ -87,6 +87,10 @@
         temperature_night = 4000;
       };
 
+      brightness = {
+        enable_ddcutil = true;
+      };
+
       widget.wallhaven.type = "noctalia/wallhaven:wallhaven";
       widget.gpu = {
         type = "sysmon";
