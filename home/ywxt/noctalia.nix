@@ -8,6 +8,7 @@
 
     settings = {
       accessibility.ui_scale = 1.0;
+      shell.launch_apps_as_systemd_services = true;
 
       plugins = {
         enabled = [ "noctalia/wallhaven" ];
@@ -70,6 +71,11 @@
             timeout = 330;
             action = "screen_off";
             enabled = true;
+          };
+          "suspend" = {
+            timeout = 900;
+            action = "lock_and_suspend"; # or action = "suspend" with lock_before_suspend = false"
+            enable = true;
           };
         };
       };
