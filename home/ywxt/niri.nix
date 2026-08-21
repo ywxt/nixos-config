@@ -10,7 +10,9 @@ let
         ${optionalString (monitor.mode != null) "mode ${quote monitor.mode}"}
         scale ${toString monitor.scale}
         transform ${quote monitor.transform}
-        ${optionalString (monitor.position != null) "position x=${toString monitor.position.x} y=${toString monitor.position.y}"}
+        ${optionalString (
+          monitor.position != null
+        ) "position x=${toString monitor.position.x} y=${toString monitor.position.y}"}
     }
   '';
 in

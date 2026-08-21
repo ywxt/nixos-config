@@ -19,6 +19,8 @@ in
     jetbrains.rider
     kitty
     neovim
+    nixfmt
+    nixfmt-tree
     nwg-look
     obs-studio
     obinskit

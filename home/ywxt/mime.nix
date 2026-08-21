@@ -1,8 +1,7 @@
 { lib, ... }:
 
 let
-  associations = desktop: types:
-    lib.genAttrs types (_: [ desktop ]);
+  associations = desktop: types: lib.genAttrs types (_: [ desktop ]);
 
   firefoxTypes = [
     "application/json"

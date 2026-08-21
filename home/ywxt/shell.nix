@@ -30,7 +30,10 @@
       lfs.enable = true;
       settings.user.name = "ywxt";
       settings.user.email = "ywxtcwh@gmail.com";
-      settings.credential.helper = [ "oauth" ];
+      settings.credential.helper = [
+        "cache --timeout 2592000"
+        "oauth"
+      ];
     };
     kitty = {
       enable = true;
@@ -60,7 +63,10 @@
     '';
   };
 
-  home.sessionPath = [ "$HOME/.cargo/bin" "$HOME/.local/bin" ];
+  home.sessionPath = [
+    "$HOME/.cargo/bin"
+    "$HOME/.local/bin"
+  ];
   home.sessionVariables = {
     BROWSER = "firefox";
     EDITOR = "nvim";

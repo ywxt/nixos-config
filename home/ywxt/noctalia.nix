@@ -37,7 +37,11 @@
         builtin = "Noctalia";
         templates = {
           enable_builtin_templates = true;
-          builtin_ids = [ "gtk3" "gtk4" "qt" ];
+          builtin_ids = [
+            "gtk3"
+            "gtk4"
+            "qt"
+          ];
         };
       };
 
@@ -110,7 +114,11 @@
         margin_edge = 5;
         margin_ends = 5;
         reserve_space = true;
-        start = [ "launcher" "workspaces" "cpu"];
+        start = [
+          "launcher"
+          "workspaces"
+          "cpu"
+        ];
         center = [ "media" ];
         end = [
           "tray"

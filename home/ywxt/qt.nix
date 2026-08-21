@@ -1,4 +1,9 @@
-{ config, inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 
 let
   colloidKvantum = pkgs.callPackage ../../pkgs/colloid-kvantum.nix {
