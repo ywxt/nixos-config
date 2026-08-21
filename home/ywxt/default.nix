@@ -17,6 +17,15 @@
     username = "ywxt";
     homeDirectory = "/home/ywxt";
     stateVersion = "26.05";
+
+    pointerCursor = {
+      enable = true;
+      gtk.enable = true;
+      x11.enable = true;
+      package = pkgs.adwaita-icon-theme;
+      name = "Adwaita";
+      size = 24;
+    };
   };
 
   programs.home-manager.enable = true;
@@ -31,11 +40,6 @@
     iconTheme = {
       name = "Tela-circle";
       package = pkgs.tela-circle-icon-theme;
-    };
-    cursorTheme = {
-      name = "Adwaita";
-      package = pkgs.adwaita-icon-theme;
-      size = 24;
     };
     font = {
       name = "Adwaita Sans";
