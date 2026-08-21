@@ -11,12 +11,26 @@
     ../../modules/gaming.nix
     ../../modules/development.nix
     ../../modules/monitor.nix
+    ../../modules/annepro2.nix
   ];
 
   networking.hostName = "ywxt-ws";
   time.timeZone = "Asia/Shanghai";
   i18n.defaultLocale = "en_US.UTF-8";
   console.keyMap = "us";
+
+  desktop.monitors = [
+    {
+      name = "DP-1";
+      mode = "3840x2160";
+      scale = 1.6667;
+      transform = "normal";
+      position = {
+        x = 0;
+        y = 0;
+      };
+    }
+  ];
 
   users.users.ywxt = {
     isNormalUser = true;
@@ -35,18 +49,6 @@
   services.teamviewer.enable = true;
   security.sudo.wheelNeedsPassword = true;
 
-  # Allow the active desktop user to configure Anne Pro 2 keyboards over USB.
-  services.udev.extraRules = ''
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="8008", GROUP:="users", MODE:="0660"
-    KERNEL=="hidraw*", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="8008", GROUP:="users", MODE:="0660"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="8009", GROUP:="users", MODE:="0660"
-    KERNEL=="hidraw*", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="8009", GROUP:="users", MODE:="0660"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="a292", GROUP:="users", MODE:="0660"
-    KERNEL=="hidraw*", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="a292", GROUP:="users", MODE:="0660"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="a293", GROUP:="users", MODE:="0660"
-    KERNEL=="hidraw*", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="a293", GROUP:="users", MODE:="0660"
-  '';
-
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
@@ -55,6 +57,10 @@
       substituters = [
         "https://mirrors.cernet.edu.cn/nix-channels/store"
         "https://cache.nixos.org/"
+      ];
+      extra-substituters = [ "https://noctalia.cachix.org" ];
+      extra-trusted-public-keys = [
+        "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       ];
     };
     gc = {
