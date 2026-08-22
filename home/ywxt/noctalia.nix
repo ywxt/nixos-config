@@ -33,7 +33,7 @@
 
       theme = {
         mode = "auto";
-        source = "builtin";
+        source = "wallpaper";
         builtin = "Noctalia";
         templates = {
           enable_builtin_templates = true;
