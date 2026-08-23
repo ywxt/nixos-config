@@ -2,19 +2,14 @@
 
 {
   programs.niri.enable = true;
-
   programs.uwsm.enable = true;
 
-  programs.noctalia = {
-    enable = true;
-    recommendedServices.enable = true;
-  };
-
-  services.gnome.gnome-keyring.enable = true;
   services.gvfs.enable = true;
   services.tumbler.enable = true;
   services.udisks2.enable = true;
-  security.polkit.enable = true;
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
+  xdg.portal.xdgOpenUsePortal = true;
 
   fonts = {
     fontDir.enable = true;

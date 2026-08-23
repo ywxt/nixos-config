@@ -4,8 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    home-manager = {
-      url = "github:nix-community/home-manager";
+    hjem = {
+      url = "github:feel-co/hjem";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -27,7 +27,7 @@
   outputs =
     inputs@{
       nixpkgs,
-      home-manager,
+      hjem,
       noctalia,
       ...
     }:
@@ -37,15 +37,14 @@
         specialArgs = { inherit inputs; };
         modules = [
           ./hosts/ywxt-ws
-          noctalia.nixosModules.default
-          home-manager.nixosModules.home-manager
+          hjem.nixosModules.default
           {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              backupFileExtension = "hm-backup";
-              extraSpecialArgs = { inherit inputs; };
-              users.ywxt = import ./home/ywxt;
+            hjem = {
+              specialArgs = { inherit inputs; };
+              users.ywxt = {
+                enable = true;
+                imports = [ ./home/ywxt ];
+              };
             };
           }
         ];

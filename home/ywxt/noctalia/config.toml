@@ -1,0 +1,101 @@
+[accessibility]
+ui_scale = 1.0
+
+[bar.main]
+background_opacity = 1.0
+center = ["media"]
+end = ["tray", "wallhaven", "notifications", "clipboard", "network", "bluetooth", "volume", "clock", "control-center", "session"]
+margin_edge = 5
+margin_ends = 5
+position = "top"
+radius = 12
+reserve_space = true
+start = ["launcher", "workspaces", "cpu"]
+thickness = 34
+
+[brightness]
+enable_ddcutil = true
+
+[idle]
+pre_action_fade_seconds = 2.0
+
+[idle.behavior.lock]
+action = "lock"
+enabled = true
+timeout = 300
+
+[idle.behavior.screen-off]
+action = "screen_off"
+enabled = true
+timeout = 330
+
+[idle.behavior.suspend]
+action = "lock_and_suspend"
+enable = true
+timeout = 900
+
+[location]
+address = "Shanghai"
+auto_locate = false
+
+[lockscreen]
+blur_intensity = 0.5
+blurred_desktop = true
+enabled = true
+tint_intensity = 0.3
+
+[nightlight]
+enabled = true
+force = false
+temperature_day = 6500
+temperature_night = 4000
+
+[notification]
+enable_daemon = true
+show_actions = true
+
+[plugins]
+auto_update = "all"
+enabled = ["noctalia/wallhaven"]
+
+[shell]
+clipboard_enabled = true
+clipboard_history_max_entries = 100
+date_format = "%A, %x"
+font_family = "sans-serif"
+launch_apps_as_systemd_services = true
+polkit_agent = true
+settings_show_advanced = true
+telemetry_enabled = false
+time_format = "{:%H:%M}"
+
+[shell.launcher]
+categories = true
+show_icons = true
+sort_by_usage = true
+
+[theme]
+builtin = "Noctalia"
+mode = "auto"
+source = "wallpaper"
+
+[theme.templates]
+builtin_ids = ["gtk3", "gtk4", "qt"]
+enable_builtin_templates = true
+
+[wallpaper]
+directory = "~/Pictures/Wallpapers"
+enabled = true
+fill_mode = "crop"
+
+[widget.disk]
+path = "/"
+stat = "disk_used_pct"
+type = "sysmon"
+
+[widget.gpu]
+stat = "gpu_usage"
+type = "sysmon"
+
+[widget.wallhaven]
+type = "noctalia/wallhaven:wallhaven"

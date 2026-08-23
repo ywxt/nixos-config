@@ -77,9 +77,6 @@ input {
     // focus-follows-mouse max-scroll-amount="0%"
 }
 
-// Generated from the host's desktop.monitors option by Home Manager.
-include "outputs.kdl"
-
 // Settings that influence how windows are positioned and sized.
 // Find more information on the wiki:
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Layout

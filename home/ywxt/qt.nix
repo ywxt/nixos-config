@@ -13,7 +13,7 @@ let
 
   qtctConfig = version: ''
     [Appearance]
-    color_scheme_path=${config.xdg.configHome}/qt${version}ct/colors/noctalia.conf
+    color_scheme_path=${config.xdg.config.directory}/qt${version}ct/colors/noctalia.conf
     custom_palette=true
     icon_theme=Tela-circle
     standard_dialogs=default
@@ -44,17 +44,37 @@ let
   '';
 in
 {
-  home.packages = [ colloidKvantum ];
+  packages = [
+    pkgs.libsForQt5.qt5ct
+    pkgs.qt6Packages.qt6ct
+    pkgs.kdePackages.qtstyleplugin-kvantum
+    colloidKvantum
+  ];
 
-  xdg.configFile = {
-    "qt5ct/qt5ct.conf".text = qtctConfig "5";
-    "qt6ct/qt6ct.conf".text = qtctConfig "6";
+  xdg.config.files = {
+    "qt5ct/qt5ct.conf" = {
+      clobber = true;
+      text = qtctConfig "5";
+    };
+    "qt6ct/qt6ct.conf" = {
+      clobber = true;
+      text = qtctConfig "6";
+    };
 
-    "Kvantum/kvantum.kvconfig".text = ''
-      [General]
-      theme=Colloid
-    '';
-    "Kvantum/Colloid".source = "${colloidKvantum}/share/Kvantum/Colloid";
-    "Kvantum/ColloidNord".source = "${colloidKvantum}/share/Kvantum/ColloidNord";
+    "Kvantum/kvantum.kvconfig" = {
+      clobber = true;
+      text = ''
+        [General]
+        theme=Colloid
+      '';
+    };
+    "Kvantum/Colloid" = {
+      clobber = true;
+      source = "${colloidKvantum}/share/Kvantum/Colloid";
+    };
+    "Kvantum/ColloidNord" = {
+      clobber = true;
+      source = "${colloidKvantum}/share/Kvantum/ColloidNord";
+    };
   };
 }

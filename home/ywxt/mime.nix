@@ -160,24 +160,23 @@ let
   ];
 in
 {
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications =
-      associations "firefox.desktop" firefoxTypes
-      // associations "imv.desktop" imageTypes
-      // associations "org.kde.ark.desktop" archiveTypes
-      // associations "vlc.desktop" mediaTypes
-      // {
-        "application/java-archive" = [ "java-java-openjdk.desktop" ];
-        "application/x-code-workspace" = [ "code.desktop" ];
-        "application/yaml" = [ "code.desktop" ];
-        "inode/directory" = [ "thunar.desktop" ];
-        "text/plain" = [ "code.desktop" ];
-        "x-scheme-handler/steam" = [ "steam.desktop" ];
-        "x-scheme-handler/steamlink" = [ "steam.desktop" ];
-        "x-scheme-handler/tg" = [ "org.telegram.desktop.desktop" ];
-        "x-scheme-handler/tonsite" = [ "org.telegram.desktop.desktop" ];
-        "x-scheme-handler/vscode" = [ "code-url-handler.desktop" ];
-      };
-  };
+  xdg.mime-apps.default-applications =
+    associations "firefox.desktop" firefoxTypes
+    // associations "imv.desktop" imageTypes
+    // associations "org.kde.ark.desktop" archiveTypes
+    // associations "vlc.desktop" mediaTypes
+    // {
+      "application/java-archive" = [ "java-java-openjdk.desktop" ];
+      "application/x-code-workspace" = [ "code.desktop" ];
+      "application/yaml" = [ "code.desktop" ];
+      "inode/directory" = [ "thunar.desktop" ];
+      "text/plain" = [ "code.desktop" ];
+      "x-scheme-handler/steam" = [ "steam.desktop" ];
+      "x-scheme-handler/steamlink" = [ "steam.desktop" ];
+      "x-scheme-handler/tg" = [ "org.telegram.desktop.desktop" ];
+      "x-scheme-handler/tonsite" = [ "org.telegram.desktop.desktop" ];
+      "x-scheme-handler/vscode" = [ "code-url-handler.desktop" ];
+    };
+
+  xdg.config.files."mimeapps.list".clobber = true;
 }

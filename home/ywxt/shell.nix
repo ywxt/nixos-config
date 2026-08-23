@@ -1,80 +1,49 @@
-{ pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
-  programs = {
-    fish = {
-      enable = true;
-      interactiveShellInit = ''
-        if status is-login
-          if uwsm check may-start
-            if uwsm select
-              exec uwsm start default
-            end
-          end
+  packages = with pkgs; [
+    bat
+    bottom
+    chezmoi
+    curl
+    direnv
+    nix-direnv
+    starship
+    unzip
+    wget
+  ];
+
+  xdg.config.files = {
+    "fish/config.fish" = {
+      clobber = true;
+      source = ./fish/config.fish;
+    };
+    "direnv/direnvrc" = {
+      clobber = true;
+      source = "${pkgs.nix-direnv}/share/nix-direnv/direnvrc";
+    };
+    "fish/conf.d/00-environment.fish" = {
+      clobber = true;
+      text = lib.concatStringsSep "\n" (
+        lib.mapAttrsToList (
+          name: value:
+          "set --global --export ${lib.escapeShellArg name} ${lib.escapeShellArg (toString value)}"
+        ) config.environment.sessionVariables
+      );
+    };
+    "fish/conf.d/10-kitty-integration.fish" = {
+      clobber = true;
+      text = ''
+        if set -q KITTY_INSTALLATION_DIR
+          source ${pkgs.kitty.shell_integration}/fish/vendor_conf.d/kitty-shell-integration.fish
+          set --prepend fish_complete_path ${pkgs.kitty.shell_integration}/fish/vendor_completions.d
         end
       '';
-      shellAliases = {
-        ll = "ls -alh";
-        rebuild = "sudo nixos-rebuild switch --flake $HOME/nixos-config#(hostname)";
-        update = "nix flake update --flake $HOME/nixos-config";
-      };
     };
-
-    starship.enable = true;
-    direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-    };
-    git = {
-      enable = true;
-      lfs.enable = true;
-      settings.user.name = "ywxt";
-      settings.user.email = "ywxtcwh@gmail.com";
-      settings.credential.helper = [
-        "cache --timeout 2592000"
-        "oauth"
-      ];
-    };
-    kitty = {
-      enable = true;
-      font = {
-        name = "JetBrains Mono";
-        size = 12;
-      };
-      settings = {
-        confirm_os_window_close = 0;
-        enable_audio_bell = false;
-      };
-    };
-  };
-
-  xdg.configFile = {
-    "kitty/dark-theme.auto.conf".text = ''
-      include ${pkgs.kitty-themes}/share/kitty-themes/themes/Catppuccin-Mocha.conf
-      background_opacity 0.88
-    '';
-    "kitty/light-theme.auto.conf".text = ''
-      include ${pkgs.kitty-themes}/share/kitty-themes/themes/Catppuccin-Latte.conf
-      background_opacity 0.88
-    '';
-    "kitty/no-preference-theme.auto.conf".text = ''
-      include ${pkgs.kitty-themes}/share/kitty-themes/themes/Catppuccin-Latte.conf
-      background_opacity 0.88
-    '';
-  };
-
-  home.sessionPath = [
-    "$HOME/.cargo/bin"
-    "$HOME/.local/bin"
-  ];
-  home.sessionVariables = {
-    BROWSER = "firefox";
-    EDITOR = "nvim";
-    ELECTRON_OZONE_PLATFORM_HINT = "auto";
-    NIXOS_OZONE_WL = "1";
-    QT_QPA_PLATFORM = "wayland;xcb";
-    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    TERMINAL = "kitty";
-    _JAVA_AWT_WM_NONREPARENTING = "1";
   };
 }

@@ -10,6 +10,7 @@
     ../../modules/desktop.nix
     ../../modules/gaming.nix
     ../../modules/development.nix
+    ../../modules/input-method.nix
     ../../modules/monitor.nix
     ../../modules/annepro2.nix
   ];

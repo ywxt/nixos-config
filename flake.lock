@@ -16,23 +16,23 @@
         "type": "github"
       }
     },
-    "home-manager": {
+    "hjem": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1787379775,
-        "narHash": "sha256-XL2qfqmocfsvuEGyomZg4nOZfkuSe8vZtrOX99I+b6I=",
-        "owner": "nix-community",
-        "repo": "home-manager",
-        "rev": "ec1a8fdf74ed3f276148ee106299a2ba0e65d51f",
+        "lastModified": 1787194407,
+        "narHash": "sha256-hMgbN6InoW+S5G/cqGrVwHUmOJcGIT/yUg1Xe6y7t8Q=",
+        "owner": "feel-co",
+        "repo": "hjem",
+        "rev": "7cd7f1c567beaf5527781e0b51647a98acde54e6",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
-        "repo": "home-manager",
+        "owner": "feel-co",
+        "repo": "hjem",
         "type": "github"
       }
     },
@@ -103,7 +103,7 @@
     "root": {
       "inputs": {
         "colloid-kde": "colloid-kde",
-        "home-manager": "home-manager",
+        "hjem": "hjem",
         "nixpkgs": "nixpkgs",
         "noctalia": "noctalia",
         "rime-huma": "rime-huma"
