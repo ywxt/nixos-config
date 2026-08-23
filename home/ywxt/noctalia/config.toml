@@ -3,14 +3,16 @@ ui_scale = 1.0
 
 [bar.main]
 background_opacity = 1.0
-center = ["media"]
+start = ["launcher", "workspaces", "cpu", "media"]
+center = ["active_window"]
 end = ["tray", "wallhaven", "notifications", "clipboard", "network", "bluetooth", "volume", "clock", "control-center", "session"]
-margin_edge = 5
-margin_ends = 5
+margin_edge = 0
+margin_ends = 0
 position = "top"
-radius = 12
-reserve_space = true
-start = ["launcher", "workspaces", "cpu"]
+radius = 9
+radius_top_left = 0
+radius_top_righ = 0
+reserve_space = false
 thickness = 34
 
 [brightness]
@@ -99,3 +101,8 @@ type = "sysmon"
 
 [widget.wallhaven]
 type = "noctalia/wallhaven:wallhaven"
+
+[widget.clock]
+format = "{:%H:%M} {:%d/%m}"
+vertical_format = "{:%H:%M}"
+tooltip_format = "{:%A, %B %d, %Y}"
