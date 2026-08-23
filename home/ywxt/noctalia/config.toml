@@ -12,7 +12,7 @@ position = "top"
 radius = 9
 radius_top_left = 0
 radius_top_righ = 0
-reserve_space = false
+reserve_space = true
 thickness = 34
 
 [brightness]
