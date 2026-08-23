@@ -3,6 +3,7 @@
 {
   packages = with pkgs; [
     ark
+    fastfetch
     firefox
     imv
     jetbrains.rider
