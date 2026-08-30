@@ -71,6 +71,12 @@ settings_show_advanced = true
 telemetry_enabled = false
 time_format = "{:%H:%M}"
 
+[shell.panel]
+clipboard_placement = "attached"
+open_near_click_control_center = true
+open_near_click_clipboard = true
+open_near_click_wallpaper = true
+
 [shell.launcher]
 categories = true
 show_icons = true
