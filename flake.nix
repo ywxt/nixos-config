@@ -49,5 +49,23 @@
           }
         ];
       };
+
+      nixosConfigurations.ywxt-work = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/ywxt-work
+          hjem.nixosModules.default
+          {
+            hjem = {
+              specialArgs = { inherit inputs; };
+              users.ywxt = {
+                enable = true;
+                imports = [ ./home/ywxt ];
+              };
+            };
+          }
+        ];
+      };
     };
 }
