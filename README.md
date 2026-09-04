@@ -23,7 +23,8 @@ User-level configuration is managed with hjem instead of Home Manager.
 - TTY login startup through Fish, UWSM and hjem
 - Noctalia-native lock, idle and screen-off handling (no swayidle)
 - Noctalia-native brightness handling (no explicit brightnessctl package)
-- FlClash from `pkgs.flclash`, including XDG autostart
+- Clash Verge Rev via `programs.clash-verge` with `pkgs.clash-verge-rev`,
+  including autostart and TUN service mode
 - PipeWire, NetworkManager, Bluetooth and Wayland portals
 - hjem-managed Fcitx5 with the pinned `ywxt/rime-huma` scheme,
   librime-lua support and Fluent light/dark themes
@@ -168,7 +169,7 @@ To update the OpenHarmony SDK, bump `version`/`apiVersion` and the pinned
 `hash` in `pkgs/ohos-sdk.nix` to a newer release from
 `https://repo.huaweicloud.com/openharmony/os/`.
 
-If FlClash system proxy works but TUN traffic does not, first test this narrowly
+If Clash Verge Rev system proxy works but TUN traffic does not, first test this narrowly
 scoped fallback in `modules/networking.nix`:
 
 ```nix
