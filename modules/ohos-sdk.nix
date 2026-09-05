@@ -1,10 +1,5 @@
 { pkgs, ... }:
 
-let
-  ohosSdk = pkgs.callPackage ../pkgs/ohos-sdk.nix { };
-  ohosBuildEnv = pkgs.callPackage ../pkgs/ohos-build-env.nix { };
-  hihopeIot = pkgs.callPackage ../pkgs/hihope-iot.nix { };
-in
 {
   /*
     OpenHarmony 7.0 Dayu200/RK3568 full-system source build:
@@ -42,12 +37,12 @@ in
     pkgs.minicom
     pkgs.python3
     pkgs.usbutils
-    hihopeIot
-    ohosSdk
-    ohosBuildEnv
+    pkgs.hihope-iot
+    pkgs.ohos-sdk
+    pkgs.ohos-build-env
   ];
 
   # Installs the packaged Rockchip Loader/Maskrom rules. Like extraRules,
   # services.udev.packages is merged with contributions from other modules.
-  services.udev.packages = [ hihopeIot ];
+  services.udev.packages = [ pkgs.hihope-iot ];
 }
