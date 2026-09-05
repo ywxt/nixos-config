@@ -42,6 +42,10 @@ User-level configuration is managed with hjem instead of Home Manager.
 - `ohos-sdk` from `pkgs/ohos-sdk.nix`: OpenHarmony SDK 26.0.0.38 (API 26,
   from the `7.0-Release` image) for Linux x86_64, packaged with
   `buildFHSEnv` and installed through `modules/ohos-sdk.nix`
+- `ohos-build-env` on `ywxt-work`, providing Docker environments for standard,
+  small and mini device-system source builds
+- `dayu200-flash`, packaging HiHope's Linux x86_64 RK3568 flashing utility and
+  its user-accessible Loader/Maskrom udev rules
 
 The `ohos-sdk` package keeps the unwrapped SDK under
 `$(nix-build ...)/opt/ohos-sdk/26` (also available as
@@ -59,6 +63,56 @@ hdc list targets
 Only the `ohos-sdk/linux` components of the upstream bundle are installed; the
 `windows/` and `ohos/` parts are dropped, matching the packaging of the
 `ohos-sdk` AUR package.
+
+For a full OpenHarmony 7.0 standard-system build for Dayu200/RK3568, acquire
+the matching manifest and its Git LFS objects first:
+
+```bash
+mkdir -p "$HOME/src/openharmony-7.0"
+cd "$HOME/src/openharmony-7.0"
+repo init -u https://gitcode.com/openharmony/manifest.git \
+  -b OpenHarmony-7.0-Release -m chipsets/dayu200.xml \
+  --no-repo-verify --depth=1
+repo sync -c -j8 --fail-fast
+repo forall -c 'git lfs pull'
+```
+
+Prepare the container, download the source-controlled prebuilts, and build the
+actual system images:
+
+```bash
+# Build the standard-system image ahead of time (otherwise first use does it).
+ohos-build-env --prepare standard
+
+# Run these from the OpenHarmony source root.
+ohos-build-env standard . ./build/prebuilts_download.sh
+ohos-build-env standard . ./build.sh --product-name rk3568 --ccache
+
+# Other system types still use the official images directly.
+ohos-build-env small . python3 build.py -p qemu_small_system_demo@ohemu
+```
+
+Successful RK3568 output is written to
+`out/rk3568/packages/phone/images/`. The official image runs as root, so files
+created in the bind-mounted source tree are root-owned; change ownership of the
+specific source checkout afterward if local editing requires it.
+
+With a Dayu200 connected through its USB OTG port and placed in Loader or
+Maskrom mode, query it and flash the complete image set with:
+
+```bash
+dayu200-flash -q
+dayu200-flash -a -i "$HOME/src/openharmony-7.0/out/rk3568/packages/phone/images"
+```
+
+The available types are `standard`, `small` and `mini`. The standard environment
+is derived from the official `docker_oh_standard:3.2` image and adds the
+autotools, CMake and Python venv packages required by the current 7.0 source
+tree. Small and mini use their official 3.2 images directly. Docker access
+grants root-equivalent privileges;
+membership of the `docker` group is intentionally configured only for the
+`ywxt-work` user. The SDK and Docker wrapper are likewise imported only by the
+`ywxt-work` host.
 
 Git and Git LFS are intentionally available at both the NixOS system level and
 through hjem. User Git settings and the OAuth credential helper are managed by
@@ -156,6 +210,23 @@ disk as well; verify the mount points against
 new files, remember that Git-based Flake references ignore untracked files. An
 explicit `path:$HOME/nixos-config` URL can be used while testing untracked
 changes.
+
+## Project templates
+
+The Flake exposes reusable development environments for Rust, frontend,
+Python and C/C++ projects. Initialize one in an empty project directory with:
+
+```bash
+nix flake init -t path:$HOME/nixos-config#rust
+nix flake init -t path:$HOME/nixos-config#frontend
+nix flake init -t path:$HOME/nixos-config#python
+nix flake init -t path:$HOME/nixos-config#cpp
+```
+
+The default template is Rust, so `#rust` may be omitted. If direnv is enabled,
+run `direnv allow` after initialization; otherwise enter with `nix develop`.
+The Rust template installs the selected `RUSTC_VERSION` through rustup only
+when the compiler or Cargo is missing.
 
 ## Maintenance
 

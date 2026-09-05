@@ -1,0 +1,5 @@
+/.direnv
+/.next
+/.nuxt
+/dist
+/node_modules

@@ -32,6 +32,33 @@
       ...
     }:
     {
+      templates = {
+        default = {
+          path = ./templates/rust;
+          description = "Rust development environment managed by rustup";
+        };
+
+        rust = {
+          path = ./templates/rust;
+          description = "Rust development environment managed by rustup";
+        };
+
+        frontend = {
+          path = ./templates/frontend;
+          description = "Frontend development environment with Node.js and pnpm";
+        };
+
+        python = {
+          path = ./templates/python;
+          description = "Python development environment with uv";
+        };
+
+        cpp = {
+          path = ./templates/cpp;
+          description = "C/C++ development environment with Clang, CMake and Ninja";
+        };
+      };
+
       nixosConfigurations.ywxt-ws = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };

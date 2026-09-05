@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./annepro2.nix
     ./applications.nix
     ./development.nix
     ./gaming.nix

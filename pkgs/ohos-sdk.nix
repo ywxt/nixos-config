@@ -63,7 +63,10 @@ let
     export OHOS_NDK_HOME=${sdk}/${apiDir}/native
     export OHOS_API_VERSION=${apiVersion}
     export PATH=${sdk}/${apiDir}/native/llvm/bin:${sdk}/${apiDir}/toolchains:$PATH
-    exec bash -i "$@"
+    if [[ $# -eq 0 ]]; then
+      exec bash -i
+    fi
+    exec bash "$@"
   '';
 in
 buildFHSEnv {
