@@ -169,15 +169,6 @@ sudo nixos-rebuild switch --flake "$HOME/nixos-config#$(hostname)"
 
 Also, there are two alias, `update` and `rebuild`, to simplify commands below. These will update `flake.lock` and rebuild for the current machine.
 
-If Clash Verge Rev system proxy works but TUN traffic does not, first test this
-narrowly scoped fallback in `modules/networking.nix`:
-
-```nix
-networking.firewall.checkReversePath = "loose";
-```
-
-Do not disable the firewall pre-emptively.
-
 ## OpenHarmony development
 
 The OpenHarmony environment is imported only by `ywxt-work` through
