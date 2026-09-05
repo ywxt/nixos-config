@@ -185,7 +185,7 @@ The OpenHarmony environment is imported only by `ywxt-work` through
 
 - `ohos-sdk`: OpenHarmony SDK 26.0.0.38 (API 26) from the `7.0-Release`
   Linux x86_64 bundle
-- `ohos-build-env`: Docker environments for standard, small and mini
+- `ohos`: Docker environments for standard, small and mini
   device-system source development and builds
 - `git-repo` for the upstream multi-repository source tree; the shared hjem Git
   configuration supplies Git LFS
@@ -228,7 +228,7 @@ The source tree remains on the host for editing. Enter its interactive build
 environment with:
 
 ```bash
-ohos-build-env standard "$HOME/src/openharmony-7.0"
+ohos standard "$HOME/src/openharmony-7.0"
 ```
 
 The standard environment derives from OpenHarmony's official
@@ -237,26 +237,38 @@ needed by the pinned 7.0 source. It is built automatically on first use, or can
 be prepared explicitly:
 
 ```bash
-ohos-build-env --prepare standard
+ohos --prepare standard
 ```
 
 Download the prebuilts and create the complete RK3568 system images:
 
 ```bash
 cd "$HOME/src/openharmony-7.0"
-ohos-build-env standard . ./build/prebuilts_download.sh
-ohos-build-env standard . \
+ohos standard . ./build/prebuilts_download.sh
+ohos standard . \
   ./build.sh --product-name rk3568 --ccache -j16
 ```
 
-The images are written to `out/rk3568/packages/phone/images/`. Container
-commands run as root, so generated files in the bind-mounted checkout are
-root-owned. Docker access itself is also root-equivalent.
+The images are written to `out/rk3568/packages/phone/images/`.
+`ohos` runs the container with the invoking user's UID and GID, so
+new files in the bind-mounted checkout remain editable and removable by that
+user. Its persistent container HOME is stored under
+`$XDG_CACHE_HOME/ohos-build-env`, or `~/.cache/ohos-build-env` when
+`XDG_CACHE_HOME` is unset. The same directory also holds the temporary
+prebuilts download cache required beside the container source mount. Docker
+access itself remains root-equivalent.
+
+Clear the persistent container home and prebuilts download cache without
+touching the source tree or build output:
+
+```bash
+ohos --clean-cache
+```
 
 Small and mini system environments continue to use their official 3.2 images:
 
 ```bash
-ohos-build-env small . python3 build.py -p qemu_small_system_demo@ohemu
+ohos small . python3 build.py -p qemu_small_system_demo@ohemu
 ```
 
 ### Dayu200 flashing

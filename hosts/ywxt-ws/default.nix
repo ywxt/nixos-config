@@ -48,7 +48,6 @@
   };
 
   programs.fish.enable = true;
-  services.teamviewer.enable = true;
   security.sudo.wheelNeedsPassword = true;
 
   system.stateVersion = "26.05";

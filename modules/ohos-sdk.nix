@@ -19,9 +19,9 @@ in
       repo sync -c -j8 --fail-fast
       repo forall -c 'git lfs pull'
 
-      ohos-build-env --prepare standard
-      ohos-build-env standard . ./build/prebuilts_download.sh
-      ohos-build-env standard . \
+      ohos --prepare standard
+      ohos standard . ./build/prebuilts_download.sh
+      ohos standard . \
         ./build.sh --product-name rk3568 --ccache -j16
 
     Images are written to out/rk3568/packages/phone/images/.

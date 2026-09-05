@@ -6,7 +6,7 @@
 }:
 
 writeShellApplication {
-  name = "ohos-build-env";
+  name = "ohos";
 
   runtimeInputs = [
     docker
@@ -19,22 +19,36 @@ writeShellApplication {
 
         usage() {
           cat <<'EOF'
-    Usage: ohos-build-env TYPE [SOURCE_DIR] [COMMAND...]
-           ohos-build-env --pull TYPE
-           ohos-build-env --prepare standard
+    Usage: ohos TYPE [SOURCE_DIR] [COMMAND...]
+           ohos --pull TYPE
+           ohos --prepare standard
+           ohos --clean-cache
 
     TYPE is one of: standard, small, mini
     SOURCE_DIR defaults to the current directory and is mounted at
-    /home/openharmony. With no COMMAND, an interactive shell is started using the
-    image's default command.
+    /home/openharmony. The container runs with the invoking user's UID/GID so
+    generated files remain writable on the host. With no COMMAND, an interactive
+    shell is started using the image's default command.
 
     Examples:
-      ohos-build-env --prepare standard
-      ohos-build-env standard ~/src/openharmony
-      ohos-build-env standard . ./build.sh --product-name rk3568 --ccache
-      ohos-build-env small . python3 build.py -p qemu_small_system_demo@ohemu
+      ohos --prepare standard
+      ohos standard ~/src/openharmony
+      ohos standard . ./build.sh --product-name rk3568 --ccache
+      ohos small . python3 build.py -p qemu_small_system_demo@ohemu
+      ohos --clean-cache
     EOF
         }
+
+        container_home="''${XDG_CACHE_HOME:-$HOME/.cache}/ohos-build-env"
+        if [[ ''${1:-} == --clean-cache ]]; then
+          if [[ -e $container_home ]]; then
+            rm -rf -- "$container_home"
+            echo "ohos: removed cache: $container_home"
+          else
+            echo "ohos: cache is already empty: $container_home"
+          fi
+          exit 0
+        fi
 
         action=run
         if [[ ''${1:-} == --pull || ''${1:-} == --prepare ]]; then
@@ -56,7 +70,7 @@ writeShellApplication {
             exec docker build --pull --tag "$image" "$standard_context"
           fi
           if ! docker image inspect "$image" >/dev/null 2>&1; then
-            echo "ohos-build-env: preparing the OpenHarmony 7.0 standard image" >&2
+            echo "ohos: preparing the OpenHarmony 7.0 standard image" >&2
             docker build --tag "$image" "$standard_context"
           fi
         else
@@ -64,7 +78,7 @@ writeShellApplication {
           if [[ $action == pull ]]; then
             exec docker pull "$image"
           elif [[ $action == prepare ]]; then
-            echo "ohos-build-env: --prepare is only needed for the standard image" >&2
+            echo "ohos: --prepare is only needed for the standard image" >&2
             exit 2
           fi
         fi
@@ -74,10 +88,13 @@ writeShellApplication {
           shift
         fi
         if [[ ! -d $source_dir ]]; then
-          echo "ohos-build-env: source directory does not exist: $source_dir" >&2
+          echo "ohos: source directory does not exist: $source_dir" >&2
           exit 2
         fi
         source_dir=$(realpath "$source_dir")
+
+        prebuilts_cache="$container_home/prebuilts-download"
+        mkdir -p "$container_home" "$prebuilts_cache"
 
         tty_args=()
         if [[ -t 0 && -t 1 ]]; then
@@ -85,6 +102,14 @@ writeShellApplication {
         fi
 
         exec docker run --rm "''${tty_args[@]}" \
+          --user "$(id -u):$(id -g)" \
+          --env HOME="$HOME" \
+          --env USER="''${USER:-ohos}" \
+          --env LOGNAME="''${LOGNAME:-''${USER:-ohos}}" \
+          --volume /etc/passwd:/etc/passwd:ro \
+          --volume /etc/group:/etc/group:ro \
+          --volume "$container_home:$HOME" \
+          --volume "$prebuilts_cache:/home/openharmony_prebuilts" \
           --volume "$source_dir:/home/openharmony" \
           --workdir /home/openharmony \
           "$image" "$@"
@@ -95,6 +120,6 @@ writeShellApplication {
     homepage = "https://gitee.com/openharmony/docs/blob/master/zh-cn/device-dev/get-code/gettools-acquire.md";
     license = lib.licenses.asl20;
     platforms = [ "x86_64-linux" ];
-    mainProgram = "ohos-build-env";
+    mainProgram = "ohos";
   };
 }
