@@ -9,8 +9,7 @@
     nwg-look
     obs-studio
     telegram-desktop
-    # Use FFmpeg's full feature set for broad audio/video codec support.
-    (vlc.override { ffmpeg_7 = ffmpeg_7-full; })
+    vlc
     vscode
     typst
     neovim

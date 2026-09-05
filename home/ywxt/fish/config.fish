@@ -22,6 +22,15 @@ if status is-interactive
   alias ll 'ls -alh'
   alias rebuild 'sudo nixos-rebuild switch --flake $HOME/nixos-config#(hostname)'
   alias update 'nix flake update --flake $HOME/nixos-config'
+
+  # Initialize a local flake template with `nfi <template>`; default to Rust.
+  function nfi --argument-names template
+    if test -z "$template"
+      set template rust
+    end
+    nix flake init -t "path:$HOME/nixos-config#$template"
+  end
+
   starship init fish | source
   direnv hook fish | source
 end

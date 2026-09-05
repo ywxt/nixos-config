@@ -146,24 +146,28 @@ The Flake exposes reusable development environments for Rust, frontend,
 Python and C/C++ projects. Initialize one in an empty project directory with:
 
 ```bash
-nix flake init -t path:$HOME/nixos-config#rust
-nix flake init -t path:$HOME/nixos-config#frontend
-nix flake init -t path:$HOME/nixos-config#python
-nix flake init -t path:$HOME/nixos-config#cpp
+nfi rust
+nfi frontend
+nfi python
+nfi cpp
 ```
 
-The default template is Rust, so `#rust` may be omitted. If direnv is enabled,
-run `direnv allow` after initialization; otherwise enter with `nix develop`.
-The Rust template installs the selected `RUSTC_VERSION` through rustup only
-when the compiler or Cargo is missing.
+`nfi` is a Fish helper for
+`nix flake init -t path:$HOME/nixos-config#<template>` and defaults to the Rust
+template when called without an argument. If direnv is enabled, run
+`direnv allow` after initialization; otherwise enter with `nix develop`. The
+Rust template installs the selected `RUSTC_VERSION` through rustup only when
+the compiler or Cargo is missing.
 
 ## Maintenance
 
 ```bash
-sudo nixos-rebuild switch --flake "$HOME/nixos-config#$(hostname)"
-nix flake update --flake "$HOME/nixos-config"
 nix flake check "$HOME/nixos-config"
+nix flake update --flake "$HOME/nixos-config"
+sudo nixos-rebuild switch --flake "$HOME/nixos-config#$(hostname)"
 ```
+
+Also, there are two alias, `update` and `rebuild`, to simplify commands below. These will update `flake.lock` and rebuild for the current machine.
 
 If Clash Verge Rev system proxy works but TUN traffic does not, first test this
 narrowly scoped fallback in `modules/networking.nix`:
