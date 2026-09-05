@@ -32,8 +32,6 @@
     nixfmt-tree
     pkg-config
     python3
-    rustup
-    uv
 
   ];
 }

@@ -9,7 +9,6 @@
   packages = with pkgs; [
     bat
     bottom
-    chezmoi
     curl
     direnv
     nix-direnv
