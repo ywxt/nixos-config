@@ -25,7 +25,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check flake outputs
-        run: nix flake check --no-build --print-build-logs
+        run: nix flake check --print-build-logs
 
   hosts:
     name: Evaluate ${{ matrix.host }}
