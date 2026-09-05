@@ -1,5 +1,5 @@
 {
-  description = "NixOS configuration for ywxt-ws";
+  description = "NixOS configurations for ywxt";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
