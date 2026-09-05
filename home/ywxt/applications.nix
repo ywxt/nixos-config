@@ -2,21 +2,38 @@
 
 {
   packages = with pkgs; [
-    ark
+    # Desktop applications
     fastfetch
     firefox
     imv
-    jetbrains.rider
     nwg-look
     obs-studio
     telegram-desktop
-    (thunar.override {
-      thunarPlugins = [
-        thunar-archive-plugin
-        thunar-volman
-      ];
-    })
     vlc
     vscode
+    typst
+    neovim
+
+    # Graphical and command-line archive tools
+    kdePackages.ark
+    gnutar
+    _7zz
+    unzip
+    zip
+
+    # Development tools
+    clang
+    cmake
+    gcc
+    gnumake
+    jdk21
+
+    nixfmt
+    nixfmt-tree
+    pkg-config
+    python3
+    rustup
+    uv
+
   ];
 }

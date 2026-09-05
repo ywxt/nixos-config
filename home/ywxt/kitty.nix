@@ -4,8 +4,13 @@
   packages = with pkgs; [
     kitty
     kitty-themes
+    xdg-terminal-exec
   ];
   xdg.config.files = {
+    "xdg-terminals.list" = {
+      clobber = true;
+      text = "kitty.desktop\n";
+    };
     "kitty/kitty.conf" = {
       clobber = true;
       text = ''

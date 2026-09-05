@@ -9,6 +9,10 @@ retaining host-specific hardware and development modules:
 
 User-level configuration is managed with hjem instead of Home Manager.
 
+## Screenshot
+
+![Niri and Noctalia desktop](docs/screenshots/desktop.png)
+
 ## Included
 
 - NixOS unstable pinned by `flake.lock`
@@ -37,7 +41,7 @@ User-level configuration is managed with hjem instead of Home Manager.
 - Intel UHD 770 graphics on `ywxt-work` through `modules/hardware-intel.nix`:
   Vulkan, VAAPI (`intel-media-driver`) and QSV (`vpl-gpu-rt`), thermald,
   `kvm-intel` and Intel microcode
-- Rust, Java, Python and C/C++ development tools managed through hjem
+- Rust, Java, Python, C/C++, Nix and Typst development tools managed through hjem
 
 Git, Git LFS, user Git settings and the OAuth credential helper are managed by
 hjem for `ywxt`. Docker is enabled on both hosts by the shared development

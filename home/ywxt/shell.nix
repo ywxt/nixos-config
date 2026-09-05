@@ -14,7 +14,6 @@
     direnv
     nix-direnv
     starship
-    unzip
     wget
   ];
 

@@ -3,7 +3,6 @@
 {
   imports = [
     ./applications.nix
-    ./development.nix
     ./gaming.nix
     ./git.nix
     ./gtk.nix
@@ -14,6 +13,7 @@
     ./noctalia.nix
     ./qt.nix
     ./shell.nix
+    ./thunar.nix
     ./xdg.nix
   ];
 }

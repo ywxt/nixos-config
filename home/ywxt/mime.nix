@@ -171,6 +171,7 @@ in
       "application/yaml" = [ "code.desktop" ];
       "inode/directory" = [ "thunar.desktop" ];
       "text/plain" = [ "code.desktop" ];
+      "x-scheme-handler/terminal" = [ "kitty.desktop" ];
       "x-scheme-handler/steam" = [ "steam.desktop" ];
       "x-scheme-handler/steamlink" = [ "steam.desktop" ];
       "x-scheme-handler/tg" = [ "org.telegram.desktop.desktop" ];
