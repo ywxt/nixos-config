@@ -7,6 +7,15 @@
     xdg-terminal-exec
   ];
   xdg.config.files = {
+    "fish/conf.d/10-kitty-integration.fish" = {
+      clobber = true;
+      text = ''
+        if set -q KITTY_INSTALLATION_DIR
+          source ${pkgs.kitty.shell_integration}/fish/vendor_conf.d/kitty-shell-integration.fish
+          set --prepend fish_complete_path ${pkgs.kitty.shell_integration}/fish/vendor_completions.d
+        end
+      '';
+    };
     "xdg-terminals.list" = {
       clobber = true;
       text = "kitty.desktop\n";

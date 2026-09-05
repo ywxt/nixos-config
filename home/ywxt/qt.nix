@@ -1,16 +1,10 @@
 {
   config,
-  inputs,
   pkgs,
   ...
 }:
 
 let
-  colloidKvantum = pkgs.callPackage ../../pkgs/colloid-kvantum.nix {
-    src = inputs.colloid-kde;
-    version = inputs.colloid-kde.shortRev or "unstable";
-  };
-
   qtctConfig = version: ''
     [Appearance]
     color_scheme_path=${config.xdg.config.directory}/qt${version}ct/colors/noctalia.conf
@@ -48,7 +42,7 @@ in
     pkgs.libsForQt5.qt5ct
     pkgs.qt6Packages.qt6ct
     pkgs.kdePackages.qtstyleplugin-kvantum
-    colloidKvantum
+    pkgs.colloid-kvantum
   ];
 
   xdg.config.files = {
@@ -70,11 +64,11 @@ in
     };
     "Kvantum/Colloid" = {
       clobber = true;
-      source = "${colloidKvantum}/share/Kvantum/Colloid";
+      source = "${pkgs.colloid-kvantum}/share/Kvantum/Colloid";
     };
     "Kvantum/ColloidNord" = {
       clobber = true;
-      source = "${colloidKvantum}/share/Kvantum/ColloidNord";
+      source = "${pkgs.colloid-kvantum}/share/Kvantum/ColloidNord";
     };
   };
 }

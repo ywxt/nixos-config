@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   gitConfig = pkgs.formats.gitIni { listsAsDuplicateKeys = true; };
@@ -16,10 +21,7 @@ in
         name = "ywxt";
         email = "ywxtcwh@gmail.com";
       };
-      credential.helper = [
-        "cache --timeout 2592000"
-        "oauth"
-      ];
+      include.path = "${config.xdg.config.directory}/git/credentials.conf";
       filter.lfs = {
         clean = "git-lfs clean -- %f";
         smudge = "git-lfs smudge -- %f";
@@ -27,5 +29,13 @@ in
         required = true;
       };
     };
+  };
+  xdg.config.files."git/credentials.conf" = {
+    clobber = true;
+    text = lib.mkDefault ''
+      [credential]
+        helper = cache --timeout 2592000
+        helper = oauth -device
+    '';
   };
 }

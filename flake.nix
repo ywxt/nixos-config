@@ -13,15 +13,6 @@
       url = "github:noctalia-dev/noctalia/cachix";
     };
 
-    rime-huma = {
-      url = "github:ywxt/rime-huma";
-      flake = false;
-    };
-
-    colloid-kde = {
-      url = "github:vinceliuice/Colloid-kde";
-      flake = false;
-    };
   };
 
   outputs =
@@ -31,7 +22,12 @@
       noctalia,
       ...
     }:
+    let
+      localOverlay = import ./pkgs;
+    in
     {
+      overlays.default = localOverlay;
+
       templates = {
         default = {
           path = ./templates/rust;
@@ -63,6 +59,7 @@
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
+          { nixpkgs.overlays = [ localOverlay ]; }
           ./hosts/ywxt-ws
           hjem.nixosModules.default
           {
@@ -70,7 +67,10 @@
               specialArgs = { inherit inputs; };
               users.ywxt = {
                 enable = true;
-                imports = [ ./home/ywxt ];
+                imports = [
+                  ./home/ywxt
+                  ./home/ywxt/desktop.nix
+                ];
               };
             };
           }
@@ -81,6 +81,7 @@
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
+          { nixpkgs.overlays = [ localOverlay ]; }
           ./hosts/ywxt-work
           hjem.nixosModules.default
           {
@@ -88,7 +89,10 @@
               specialArgs = { inherit inputs; };
               users.ywxt = {
                 enable = true;
-                imports = [ ./home/ywxt ];
+                imports = [
+                  ./home/ywxt
+                  ./home/ywxt/desktop.nix
+                ];
               };
             };
           }

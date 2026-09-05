@@ -1,19 +1,10 @@
-{
-  inputs,
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 
 let
-  rimeHuma = pkgs.callPackage ../pkgs/rime-huma.nix {
-    src = inputs.rime-huma;
-    version = inputs.rime-huma.shortRev or "unstable";
-  };
-
   fcitx5RimeHuma = pkgs.fcitx5-rime.override {
     rimeDataPkgs = [
       pkgs.rime-data
-      rimeHuma
+      pkgs.rime-huma
     ];
   };
 in

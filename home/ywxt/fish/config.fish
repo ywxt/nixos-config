@@ -34,13 +34,3 @@ if status is-interactive
   starship init fish | source
   direnv hook fish | source
 end
-
-fish_add_path $HOME/.cargo/bin $HOME/.local/bin
-
-if status is-login
-  if uwsm check may-start
-    if uwsm select
-      exec uwsm start default
-    end
-  end
-end

@@ -2,20 +2,12 @@
 
 {
   packages = with pkgs; [
-    # Desktop applications
+    # Command-line applications
     fastfetch
-    firefox
-    imv
-    nwg-look
-    obs-studio
-    telegram-desktop
-    vlc
-    vscode
     typst
     neovim
 
-    # Graphical and command-line archive tools
-    kdePackages.ark
+    # Command-line archive tools
     gnutar
     _7zz
     unzip

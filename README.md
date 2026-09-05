@@ -47,6 +47,51 @@ Git, Git LFS, user Git settings and the OAuth credential helper are managed by
 hjem for `ywxt`. Docker is enabled on both hosts by the shared development
 module; Docker group membership grants root-equivalent privileges.
 
+## Desktop and server user configuration
+
+The hjem configuration has a shared command-line entry point and a desktop
+add-on. In `flake.nix`, select the imports for each host explicitly:
+
+```nix
+# Server
+hjem.users.ywxt.imports = [
+  ./home/ywxt
+];
+
+# Desktop (ywxt-ws and ywxt-work)
+hjem.users.ywxt.imports = [
+  ./home/ywxt
+  ./home/ywxt/desktop.nix
+];
+```
+
+These are alternative examples. Both require `hjem.nixosModules.default` and
+`hjem.users.ywxt.enable = true`; desktop configurations also pass `inputs`
+through `hjem.specialArgs`, as the existing hosts do. The NixOS host remains
+responsible for creating the user, enabling Fish and selecting system services.
+The shared hjem entry point does not require desktop inputs or monitor options.
+
+The shared configuration includes Fish, Starship, direnv, Git/LFS, Neovim,
+command-line utilities and archive tools, **plus all existing command-line
+development tools**, including C/C++ compilers, JDK, Python, Nix tools and Typst.
+It sets the XDG base directories and `EDITOR=nvim`.
+
+The desktop add-on supplies GUI applications, Niri/Noctalia, GTK/Qt themes,
+input-method configuration, Kitty, Thunar, MIME associations and MangoHud. It
+also adds desktop environment variables, Kitty shell integration and UWSM login
+startup. Shared environment variables and PATH setup load before desktop startup.
+
+Git identity, LFS and the 30-day in-memory credential cache are shared. Servers
+use `oauth -device` to authorize on another device; desktops retain the browser
+OAuth helper. The main Git configuration includes a separately managed
+`git/credentials.conf`, so each profile has exactly one OAuth helper. Upstream
+device authorization currently supports GitHub and GitLab; use SSH or separately
+configured HTTPS credentials for other platforms. See the
+[git-credential-oauth documentation](https://github.com/hickford/git-credential-oauth#browserless-systems).
+
+This split prepares the user configuration for a server; it does not register a
+server host or change system-level desktop, networking or boot modules.
+
 ## Destructive clean installation
 
 The following applies to `ywxt-ws` and erases `/dev/nvme0n1` completely. Confirm the device name from the

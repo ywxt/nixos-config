@@ -1,13 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   stdenvNoCC,
-  src,
-  version ? "unstable",
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "rime-huma";
-  inherit src version;
+  version = "0-unstable-2026-05-21";
+
+  src = fetchFromGitHub {
+    owner = "ywxt";
+    repo = "rime-huma";
+    rev = "6657afe00b250f83a38f7de14c85336fb747de6d";
+    hash = "sha256-B2lqx13BQpPhn+yhQ3TapALab0hiMundopriyIRVOnk=";
+  };
 
   dontBuild = true;
 

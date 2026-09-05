@@ -34,13 +34,10 @@
         ) config.environment.sessionVariables
       );
     };
-    "fish/conf.d/10-kitty-integration.fish" = {
+    "fish/conf.d/05-path.fish" = {
       clobber = true;
       text = ''
-        if set -q KITTY_INSTALLATION_DIR
-          source ${pkgs.kitty.shell_integration}/fish/vendor_conf.d/kitty-shell-integration.fish
-          set --prepend fish_complete_path ${pkgs.kitty.shell_integration}/fish/vendor_completions.d
-        end
+        fish_add_path --global $HOME/.local/bin
       '';
     };
   };
