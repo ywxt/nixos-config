@@ -98,6 +98,19 @@ in
         };
       };
     };
+    "fcitx5/conf/rime.conf" = {
+      clobber = true;
+
+      source = iniGlobal.generate "fcitx5-rime" {
+        globalSection = {
+          PreeditMode = "ComposingText";
+          PreeditCursorPositionAtBeginning = false;
+          InputState = "FollowGlobalConfig";
+          SwitchInputMethodBehavior = "CommitCommitPreview";
+          LatinModeNameFromSchema = false;
+        };
+      };
+    };
   };
 
   xdg.data.files."fcitx5/rime/default.custom.yaml" = {
