@@ -1,5 +1,6 @@
 {
   fetchFromGitHub,
+  lib,
   stdenvNoCC,
 }:
 
@@ -20,4 +21,11 @@ stdenvNoCC.mkDerivation {
     cp -R Kvantum/Colloid Kvantum/ColloidNord "$out/share/Kvantum/"
     runHook postInstall
   '';
+
+  meta = {
+    description = "Colloid color schemes for the Kvantum Qt theme engine";
+    homepage = "https://github.com/vinceliuice/Colloid-kde";
+    license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
+  };
 }
