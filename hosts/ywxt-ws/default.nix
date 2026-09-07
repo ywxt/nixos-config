@@ -11,6 +11,7 @@
     ../../modules/gaming.nix
     ../../modules/development.nix
     ../../modules/input-method.nix
+    ../../modules/space-nav.nix
     ../../modules/monitor.nix
     ../../modules/nix-settings.nix
     ../../modules/annepro2.nix

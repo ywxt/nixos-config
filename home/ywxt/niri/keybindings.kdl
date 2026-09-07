@@ -19,6 +19,7 @@ binds {
     Mod+Alt+L hotkey-overlay-title="Lock the Screen: Noctalia" { spawn "noctalia" "msg" "session" "lock"; }
     Mod+E hotkey-overlay-title="Open a File Manager: thunar" { spawn-sh "uwsm app -- thunar"; }
     Mod+S hotkey-overlay-title="Open settings" { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+Space hotkey-overlay-title="Toggle Space Nav (hold Space + hjkl / gaming Space)" { spawn "space-nav-toggle"; }
     // You can also use a shell. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument in the end.
     // Mod+T { spawn "bash" "-c" "notify-send hello && exec kitty"; }

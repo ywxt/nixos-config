@@ -10,6 +10,7 @@
     ../../modules/desktop.nix
     ../../modules/development.nix
     ../../modules/input-method.nix
+    ../../modules/space-nav.nix
     ../../modules/monitor.nix
     ../../modules/nix-settings.nix
     ../../modules/ohos-sdk.nix
