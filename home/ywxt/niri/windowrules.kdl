@@ -86,6 +86,6 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r#"^thunar$"#" title="(?i)(rename|replace|properties|属性|重命名|替换|文件操作|复制|移动)"
+    match app-id=r#"^thunar$"# title="(?i)(rename|replace|properties|属性|重命名|替换|文件操作|复制|移动)"
     open-floating true
 }
