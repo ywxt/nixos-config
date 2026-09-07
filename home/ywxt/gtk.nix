@@ -12,6 +12,7 @@ let
 in
 {
   packages = with pkgs; [
+    nwg-look
     adw-gtk3
     adwaita-fonts
     adwaita-icon-theme

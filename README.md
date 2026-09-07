@@ -81,6 +81,12 @@ input-method configuration, Kitty, Thunar, MIME associations and MangoHud. It
 also adds desktop environment variables, Kitty shell integration and UWSM login
 startup. Shared environment variables and PATH setup load before desktop startup.
 
+The GTK and Tela Circle icon themes are installed for desktop users. After the
+first desktop login, open `nwg-look`, select `adw-gtk3` as the GTK theme and
+`Tela-circle` as the icon theme, then click **Apply** to update GSettings. Do not
+use its **Export** action: the GTK 3 and GTK 4 `settings.ini` files are generated
+declaratively and contain the same theme choices.
+
 Git identity, LFS and the 30-day in-memory credential cache are shared. Servers
 use `oauth -device` to authorize on another device; desktops retain the browser
 OAuth helper. The main Git configuration includes a separately managed

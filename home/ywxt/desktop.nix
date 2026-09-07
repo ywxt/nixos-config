@@ -16,7 +16,6 @@
   packages = with pkgs; [
     firefox
     imv
-    nwg-look
     obs-studio
     telegram-desktop
     vlc
