@@ -21,6 +21,7 @@ in
         name = "ywxt";
         email = "ywxtcwh@gmail.com";
       };
+      color.ui = "auto";
       include.path = "${config.xdg.config.directory}/git/credentials.conf";
       filter.lfs = {
         clean = "git-lfs clean -- %f";
