@@ -35,6 +35,7 @@ in
     clobber = true;
     text = lib.mkDefault ''
       [credential]
+        helper = store --file ~/.local/share/git/credentials
         helper = cache --timeout 2592000
         helper = oauth -device
     '';
