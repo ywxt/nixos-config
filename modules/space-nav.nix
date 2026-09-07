@@ -26,7 +26,7 @@ in
           u i o n)
 
         (deflayer dualrole
-          (tap-hold 200 200 spc (layer-while-held nav))
+          (tap-hold 150 150 spc (layer-while-held nav))
           h j k l
           u i o n)
 
