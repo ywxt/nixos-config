@@ -14,6 +14,9 @@ let
   '';
 in
 {
+  # Do not enable this module together with Steam's udev rules: Steam tags
+  # /dev/uinput with uaccess, which prevents Kanata's dynamic user from
+  # opening the device through its supplementary uinput group.
   services.kanata = {
     enable = true;
     keyboards.space-nav = {
