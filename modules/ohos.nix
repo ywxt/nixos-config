@@ -37,11 +37,15 @@
     pkgs.minicom
     pkgs.python3
     pkgs.usbutils
+    pkgs.hdc
     pkgs.hihope-iot
     pkgs.ohos-build-env
   ];
 
   # Installs the packaged Rockchip Loader/Maskrom rules. Like extraRules,
   # services.udev.packages is merged with contributions from other modules.
-  services.udev.packages = [ pkgs.hihope-iot ];
+  services.udev.packages = [
+    pkgs.hdc
+    pkgs.hihope-iot
+  ];
 }
