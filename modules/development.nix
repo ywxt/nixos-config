@@ -1,4 +1,8 @@
+{ pkgs, ... }:
+
 {
+  environment.systemPackages = [ pkgs.bashInteractive ];
+
   virtualisation.docker = {
     enable = true;
     enableOnBoot = false;
