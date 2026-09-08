@@ -13,7 +13,7 @@
     ../../modules/space-nav.nix
     ../../modules/monitor.nix
     ../../modules/nix-settings.nix
-    ../../modules/ohos-sdk.nix
+    ../../modules/ohos.nix
   ];
 
   networking.hostName = "ywxt-work";

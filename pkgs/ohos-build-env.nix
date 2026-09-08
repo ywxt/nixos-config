@@ -34,8 +34,12 @@ writeShellApplication {
       ohos --prepare standard
       ohos standard ~/src/openharmony
       ohos standard . ./build.sh --product-name rk3568 --ccache
+      OHOS_USB_DEVICE=/dev/bus/usb/001/007 ohos standard .
       ohos small . python3 build.py -p qemu_small_system_demo@ohemu
       ohos --clean-cache
+
+    Set OHOS_USB_DEVICE to one /dev/bus/usb/BBB/DDD character device to pass
+    that device through to the container for tools such as hdc.
     EOF
         }
 
@@ -101,7 +105,25 @@ writeShellApplication {
           tty_args=(-it)
         fi
 
-        exec docker run --rm "''${tty_args[@]}" \
+        device_args=()
+        if [[ -n ''${OHOS_USB_DEVICE:-} ]]; then
+          usb_device=$(realpath -- "''${OHOS_USB_DEVICE}")
+          case $usb_device in
+            /dev/bus/usb/[0-9][0-9][0-9]/[0-9][0-9][0-9]) ;;
+            *)
+              echo "ohos: OHOS_USB_DEVICE must name one /dev/bus/usb/BBB/DDD device" >&2
+              exit 2
+              ;;
+          esac
+          if [[ ! -c $usb_device ]]; then
+            echo "ohos: USB device is not a character device: $usb_device" >&2
+            exit 2
+          fi
+          device_args=(--device "$usb_device:$usb_device")
+        fi
+
+        exec docker run --rm "''${tty_args[@]}" "''${device_args[@]}" \
+          --network host \
           --user "$(id -u):$(id -g)" \
           --env HOME="$HOME" \
           --env USER="''${USER:-ohos}" \

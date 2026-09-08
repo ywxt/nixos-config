@@ -300,6 +300,19 @@ user. Its persistent container HOME is stored under
 prebuilts download cache required beside the container source mount. Docker
 access itself remains root-equivalent.
 
+To pass one USB device through for tools such as `hdc`, identify its bus and
+device numbers with `lsusb`, then set `OHOS_USB_DEVICE` when starting the
+container:
+
+```bash
+OHOS_USB_DEVICE=/dev/bus/usb/001/007 ohos standard .
+```
+
+Only the selected character device is exposed. Its `BBB/DDD` path can change
+after reconnecting the USB cable, so check `lsusb` again when necessary.
+The container also uses Docker host networking, allowing build and test tools
+to reach host services, RNDIS interfaces, and devices on host-accessible LANs.
+
 Clear the persistent container home and prebuilts download cache without
 touching the source tree or build output:
 

@@ -38,7 +38,6 @@
     pkgs.python3
     pkgs.usbutils
     pkgs.hihope-iot
-    pkgs.ohos-sdk
     pkgs.ohos-build-env
   ];
 
