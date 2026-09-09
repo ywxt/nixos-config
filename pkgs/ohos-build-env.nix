@@ -20,6 +20,8 @@ writeShellApplication {
         usage() {
           cat <<'EOF'
     Usage: ohos TYPE [SOURCE_DIR] [COMMAND...]
+           ohos xts build [SOURCE_DIR] [PRODUCT] [SUITE] [TARGET]
+           ohos xts run [SOURCE_DIR] [PRODUCT] [SUITE] [XTS_OPTIONS...]
            ohos --pull TYPE
            ohos --prepare standard
            ohos --clean-cache
@@ -35,6 +37,11 @@ writeShellApplication {
       ohos standard ~/src/openharmony
       ohos standard . ./build.sh --product-name rk3568 --ccache
       OHOS_USB_DEVICE=/dev/bus/usb/001/007 ohos standard .
+      ohos xts build . rk3568 acts
+      ohos xts build . rk3568 acts \
+        test/xts/acts/powermgr/power_manager:powermgr_power_test
+      OHOS_USB_DEVICE=/dev/bus/usb/001/007 \
+        ohos xts run . rk3568 acts -l ActsPowerMgrPowerTest -sn SERIAL
       ohos small . python3 build.py -p qemu_small_system_demo@ohemu
       ohos --clean-cache
 
@@ -60,12 +67,29 @@ writeShellApplication {
           shift
         fi
 
+        mode="command"
         case ''${1:-} in
           standard|small|mini) system_type=$1 ;;
+          xts)
+            mode=xts
+            system_type=standard
+            ;;
           -h|--help) usage; exit 0 ;;
           *) usage >&2; exit 2 ;;
         esac
         shift
+
+        if [[ $mode == xts ]]; then
+          case ''${1:-} in
+            build|run) xts_action=$1 ;;
+            *)
+              echo "ohos: xts action must be 'build' or 'run'" >&2
+              usage >&2
+              exit 2
+              ;;
+          esac
+          shift
+        fi
 
         upstream_image="swr.cn-south-1.myhuaweicloud.com/openharmony-docker/docker_oh_''${system_type}:3.2"
         if [[ $system_type == standard ]]; then
@@ -96,6 +120,98 @@ writeShellApplication {
           exit 2
         fi
         source_dir=$(realpath "$source_dir")
+
+        container_command=("$@")
+        if [[ $mode == xts ]]; then
+          product=''${1:-rk3568}
+          if [[ $# -gt 0 ]]; then
+            shift
+          fi
+          suite=''${1:-acts}
+          if [[ $# -gt 0 ]]; then
+            shift
+          fi
+
+          if [[ $xts_action == build ]]; then
+            target=''${1:-}
+            if [[ $# -gt 0 ]]; then
+              shift
+            fi
+            if [[ $# -gt 0 ]]; then
+              echo "ohos: unexpected XTS build arguments: $*" >&2
+              exit 2
+            fi
+            # Use the suite's official entry point; it sets XTS_SUITENAME and
+            # the remaining suite-specific build arguments itself.
+            # shellcheck disable=SC2016
+            container_command=(
+              bash -lc '
+                product=$1
+                suite=$2
+                target=$3
+                target=''${target#//}
+                suite_build=/home/openharmony/test/xts/$suite/build.sh
+                if [[ ! -x $suite_build ]]; then
+                  echo "ohos: unsupported XTS suite or missing build script: $suite" >&2
+                  exit 2
+                fi
+                product_config=$(find /home/openharmony/vendor -mindepth 2 -maxdepth 3 \
+                  -path "*/$product/config.json" -print -quit)
+                if [[ -z $product_config ]]; then
+                  echo "ohos: product configuration not found: $product" >&2
+                  exit 2
+                fi
+                target_arch=$(sed -n "s/.*\"target_cpu\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" \
+                  "$product_config" | head -n 1)
+                if [[ -z $target_arch ]]; then
+                  echo "ohos: target_cpu not found in: $product_config" >&2
+                  exit 2
+                fi
+                python_dir=/home/openharmony/prebuilts/python/linux-x86/current/bin
+                if [[ ! -x $python_dir/python3 ]]; then
+                  echo "ohos: OpenHarmony Python toolchain not found: $python_dir" >&2
+                  exit 2
+                fi
+                export PATH=$python_dir:$PATH
+                build_args=("product_name=$product" "target_arch=$target_arch")
+                if [[ -n $target ]]; then
+                  build_args+=("suite=$target")
+                fi
+                exec "$suite_build" "''${build_args[@]}"
+              ' ohos-xts-build "$product" "$suite" "$target"
+            )
+          else
+            # This script is intentionally expanded by the container's bash.
+            # shellcheck disable=SC2016
+            container_command=(
+              bash -lc '
+                product=$1
+                suite=$2
+                shift 2
+                build_prop=/home/openharmony/out/preloader/$product/build.prop
+                device_name=
+                if [[ -f $build_prop ]]; then
+                  device_name=$(sed -n "s/^device_name=//p" "$build_prop" | head -n 1)
+                fi
+                out_name=''${device_name:-$product}
+                suite_dir=/home/openharmony/out/$out_name/suites/$suite/$suite
+                if [[ ! -f $suite_dir/run.sh ]]; then
+                  echo "ohos: XTS runner not found: $suite_dir/run.sh" >&2
+                  echo "ohos: build it first with: ohos xts build . $product $suite" >&2
+                  exit 1
+                fi
+                for toolchains in /home/openharmony/prebuilts/ohos-sdk/linux/*/toolchains; do
+                  if [[ -d $toolchains ]]; then
+                    PATH=$toolchains:$PATH
+                  fi
+                done
+                export PATH
+                cd "$suite_dir"
+                exec bash run.sh run "$suite" "$@"
+              ' ohos-xts "$product" "$suite" "$@"
+            )
+          fi
+        fi
 
         prebuilts_cache="$container_home/prebuilts-download"
         mkdir -p "$container_home" "$prebuilts_cache"
@@ -134,7 +250,7 @@ writeShellApplication {
           --volume "$prebuilts_cache:/home/openharmony_prebuilts" \
           --volume "$source_dir:/home/openharmony" \
           --workdir /home/openharmony \
-          "$image" "$@"
+          "$image" "''${container_command[@]}"
   '';
 
   meta = {
