@@ -344,3 +344,50 @@ The package grants the active local session access only to Rockchip USB devices
 To update the packaged SDK, change `version`, `apiVersion`, the source URL and
 hash in `pkgs/ohos-sdk.nix`. Releases are published under
 <https://repo.huaweicloud.com/openharmony/os/>.
+
+## UniVPN SSH access on ywxt-work
+
+`ywxt-work` runs a headless Huawei UniVPN client in an isolated Docker network
+namespace. A SOCKS5 listener is published only on `127.0.0.1:11080`; the host's
+routes, DNS and Mihomo configuration are not changed. The listener is available
+only while the VPN tunnel has an installed route.
+
+Edit the encrypted settings with the offline recovery key:
+
+```bash
+SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
+  sops secrets/ywxt-work-univpn.yaml
+```
+
+On `ywxt-work`, edit with the host SSH key without exposing the recovery key:
+
+```bash
+sudo env \
+  SOPS_AGE_KEY_CMD='ssh-to-age -private-key -i /etc/ssh/ssh_host_ed25519_key' \
+  nix shell nixpkgs#sops nixpkgs#ssh-to-age --command \
+  sops secrets/ywxt-work-univpn.yaml
+```
+
+The file is encrypted for the age recipient derived from the host SSH public
+key. `SOPS_AGE_SSH_PRIVATE_KEY_FILE` is not suitable for this converted
+recipient; the SSH private key must first be converted by `ssh-to-age` as shown
+above.
+
+Replace every placeholder under `univpn`. VPN credentials remain root-only and
+their plaintext exists only below `/run/secrets` on tmpfs.
+
+After rebuilding, the `ywxt-work` Hjem module generates an SSH configuration
+for `192.168.41.50`. Connections use `netcat-openbsd` as an SSH `ProxyCommand`
+and go directly through the local UniVPN SOCKS proxy without changing Mihomo:
+
+```bash
+ssh 192.168.41.50
+```
+
+Useful diagnostics:
+
+```bash
+systemctl status univpn-image docker-univpn
+journalctl -u docker-univpn -f
+curl --proxy socks5h://127.0.0.1:11080 https://example.com
+```

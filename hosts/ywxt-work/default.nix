@@ -14,6 +14,7 @@
     ../../modules/monitor.nix
     ../../modules/nix-settings.nix
     ../../modules/ohos.nix
+    ../../modules/univpn.nix
   ];
 
   networking.hostName = "ywxt-work";

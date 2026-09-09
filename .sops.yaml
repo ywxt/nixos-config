@@ -1,0 +1,10 @@
+keys:
+  - &ywxt_work age1qk0fq4x0rm5v79caez6nlgwmesw2yzuy250f03zwpj4r59z4r3uspp6qlv
+  - &recovery age1pjm0aaccxj5r67zrxt6ypluy2w53pd086u2768meu5nnzyzp6sdsgugg9x
+
+creation_rules:
+  - path_regex: secrets/ywxt-work-univpn\.yaml$
+    key_groups:
+      - age:
+          - *ywxt_work
+          - *recovery
