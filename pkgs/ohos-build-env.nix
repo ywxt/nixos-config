@@ -22,6 +22,7 @@ writeShellApplication {
     Usage: ohos TYPE [SOURCE_DIR] [COMMAND...]
            ohos xts build [SOURCE_DIR] [PRODUCT] [SUITE] [TARGET]
            ohos xts run [SOURCE_DIR] [PRODUCT] [SUITE] [XTS_OPTIONS...]
+           ohos dt run [SOURCE_DIR] [PRODUCT] [DEVTEST_OPTIONS...]
            ohos --pull TYPE
            ohos --prepare standard
            ohos --clean-cache
@@ -42,6 +43,8 @@ writeShellApplication {
         test/xts/acts/powermgr/power_manager:powermgr_power_test
       OHOS_USB_DEVICE=/dev/bus/usb/001/007 \
         ohos xts run . rk3568 acts -l ActsPowerMgrPowerTest -sn SERIAL
+      OHOS_USB_DEVICE=/dev/bus/usb/001/007 \
+        ohos dt run . rk3568 -t UT -ts base_object_test
       ohos small . python3 build.py -p qemu_small_system_demo@ohemu
       ohos --clean-cache
 
@@ -74,6 +77,10 @@ writeShellApplication {
             mode=xts
             system_type=standard
             ;;
+          dt|developer-test)
+            mode=developer-test
+            system_type=standard
+            ;;
           -h|--help) usage; exit 0 ;;
           *) usage >&2; exit 2 ;;
         esac
@@ -84,6 +91,18 @@ writeShellApplication {
             build|run) xts_action=$1 ;;
             *)
               echo "ohos: xts action must be 'build' or 'run'" >&2
+              usage >&2
+              exit 2
+              ;;
+          esac
+          shift
+        fi
+
+        if [[ $mode == developer-test ]]; then
+          case ''${1:-} in
+            run) ;;
+            *)
+              echo "ohos: dt action must be 'run'" >&2
               usage >&2
               exit 2
               ;;
@@ -211,6 +230,29 @@ writeShellApplication {
               ' ohos-xts "$product" "$suite" "$@"
             )
           fi
+        fi
+
+        if [[ $mode == developer-test ]]; then
+          product=''${1:-rk3568}
+          if [[ $# -gt 0 ]]; then
+            shift
+          fi
+          developer_test=/home/openharmony/test/testfwk/developer_test/start.sh
+          # Keep the framework's official entry point and argument parser.
+          # This script is intentionally expanded by the container's bash.
+          # shellcheck disable=SC2016
+          container_command=(
+            bash -lc '
+              developer_test=$1
+              product=$2
+              shift 2
+              if [[ ! -x $developer_test ]]; then
+                echo "ohos: Developer Test entry point not found: $developer_test" >&2
+                exit 2
+              fi
+              exec "$developer_test" run -p "$product" "$@"
+            ' ohos-developer-test "$developer_test" "$product" "$@"
+          )
         fi
 
         prebuilts_cache="$container_home/prebuilts-download"

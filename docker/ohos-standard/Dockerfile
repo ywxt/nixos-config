@@ -12,4 +12,8 @@ RUN apt-get update \
         python3.8-venv \
     && rm -rf /var/lib/apt/lists/*
 
+COPY entrypoint.sh /usr/local/bin/ohos-entrypoint
+RUN chmod +x /usr/local/bin/ohos-entrypoint
+
 WORKDIR /home/openharmony
+ENTRYPOINT ["/usr/local/bin/ohos-entrypoint"]

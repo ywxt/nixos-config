@@ -34,8 +34,13 @@ stdenvNoCC.mkDerivation {
     mkdir -p $out/${apiDir}/toolchains $out/bin $out/lib/udev/rules.d
     unzip -q ohos-sdk/linux/toolchains-linux-x64-*.zip -d $out/${apiDir}
     ln -s $out/${apiDir}/toolchains/hdc $out/bin/hdc
-    echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="12d1", ATTR{idProduct}=="5000", TAG+="uaccess"' \
-      > $out/lib/udev/rules.d/70-ohos-hdc.rules
+    cat > $out/lib/udev/rules.d/70-ohos-hdc.rules <<'EOF'
+    # Huawei HDC devices.
+    SUBSYSTEM=="usb", ATTR{idVendor}=="12d1", ATTR{idProduct}=="5000", MODE="0660", GROUP="users", TAG+="uaccess"
+    # HiHope DAYU200/RK3568 in HDC and Loader/Maskrom modes.
+    SUBSYSTEM=="usb", ATTR{idVendor}=="2207", ATTR{idProduct}=="5000", MODE="0660", GROUP="users", TAG+="uaccess"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="2207", ATTR{idProduct}=="350a", MODE="0660", GROUP="users", TAG+="uaccess"
+    EOF
     chmod -R u+rwX,go+rX $out/opt
 
     runHook postInstall
