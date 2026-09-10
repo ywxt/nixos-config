@@ -97,7 +97,6 @@
                 imports = [
                   ./home/ywxt
                   ./home/ywxt/desktop.nix
-                  ./home/ywxt/univpn.nix
                 ];
               };
             };

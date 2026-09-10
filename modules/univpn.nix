@@ -8,7 +8,13 @@
 
 let
   imageName = "localhost/univpn-proxy:2.3-microsocks";
-  buildContext = ../docker/univpn;
+  # Isolate the Docker context from the Flake source path. Otherwise any
+  # unrelated repository change gives this service a new ExecStart store path
+  # and nixos-rebuild unnecessarily restarts the active VPN container.
+  buildContext = builtins.path {
+    path = ../docker/univpn;
+    name = "univpn-docker-context";
+  };
   containerService = "docker-univpn";
 
   editUniVpnSecrets = pkgs.writeShellApplication {
@@ -38,6 +44,13 @@ in
     editUniVpnSecrets
   ];
 
+  # NixOS generates /etc/ssh/ssh_config without an ssh_config.d wildcard.
+  # Add the runtime SOPS fragment through the module's supported hook so both
+  # command-line OpenSSH and clients invoking it with the system config see it.
+  programs.ssh.extraConfig = ''
+    Include /run/secrets/rendered/univpn-ssh.conf
+  '';
+
   sops = {
     defaultSopsFile = ../secrets/ywxt-work-univpn.yaml;
     age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
@@ -47,7 +60,7 @@ in
       "univpn/port" = { };
       "univpn/username" = { };
       "univpn/password" = { };
-      "univpn/ssh-host".mode = "0444";
+      "univpn/ssh-host" = { };
     };
 
     templates."univpn.env" = {
@@ -61,6 +74,16 @@ in
         TZ=Asia/Shanghai
         TUN_DEVICE=cnem_vnic
         PROXY_DNS=1.1.1.1
+      '';
+    };
+
+    templates."univpn-ssh.conf" = {
+      mode = "0444";
+      content = ''
+        Host univpn-work
+          HostName ${config.sops.placeholder."univpn/ssh-host"}
+          User wheel
+          ProxyCommand ${pkgs.netcat-openbsd}/bin/nc -x 127.0.0.1:11080 -X 5 %h %p
       '';
     };
   };

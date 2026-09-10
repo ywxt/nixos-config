@@ -374,13 +374,15 @@ The VPN credentials and rendered Docker environment are root-only. `ssh-host`
 is readable locally because the user-owned SSH client uses it for matching, but
 all decrypted values exist only below `/run/secrets` on tmpfs.
 
-After rebuilding, the `ywxt-work` Hjem module generates an SSH configuration
-for the host stored in the encrypted `univpn.ssh-host` value. Connections use
-`netcat-openbsd` as an SSH `ProxyCommand` and go directly through the local
-UniVPN SOCKS proxy without changing Mihomo:
+After rebuilding, the UniVPN system module adds an `Include` to NixOS's
+generated `/etc/ssh/ssh_config`, pointing at the runtime-only
+`/run/secrets/rendered/univpn-ssh.conf`. It does not manage or overwrite the
+user's `~/.ssh/config`. SOPS renders a normal `Host univpn-work` entry with the
+decrypted `HostName` and a `netcat-openbsd` SSH `ProxyCommand`. Connections go
+directly through the local UniVPN SOCKS proxy without changing Mihomo:
 
 ```bash
-ssh <encrypted-ssh-host>
+ssh univpn-work
 ```
 
 Useful diagnostics:
@@ -389,6 +391,6 @@ Useful diagnostics:
 systemctl status univpn-image docker-univpn
 journalctl -u docker-univpn -f
 ss -ltn 'sport = :11080'
-ssh -G <encrypted-ssh-host> | grep -E '^(user|proxycommand) '
+ssh -G univpn-work | grep -E '^(user|proxycommand) '
 curl --proxy socks5h://127.0.0.1:11080 https://example.com
 ```
