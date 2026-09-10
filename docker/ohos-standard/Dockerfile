@@ -17,3 +17,4 @@ RUN chmod +x /usr/local/bin/ohos-entrypoint
 
 WORKDIR /home/openharmony
 ENTRYPOINT ["/usr/local/bin/ohos-entrypoint"]
+CMD ["/bin/bash"]

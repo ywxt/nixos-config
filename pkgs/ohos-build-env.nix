@@ -255,6 +255,12 @@ writeShellApplication {
           )
         fi
 
+        # Do not depend on an image-provided CMD: the derived standard image
+        # has its own entrypoint, and some image builders clear the base CMD.
+        if [[ $mode == command && ''${#container_command[@]} -eq 0 ]]; then
+          container_command=(/bin/bash)
+        fi
+
         prebuilts_cache="$container_home/prebuilts-download"
         mkdir -p "$container_home" "$prebuilts_cache"
 
