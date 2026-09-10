@@ -42,6 +42,8 @@ User-level configuration is managed with hjem instead of Home Manager.
   Vulkan, VAAPI (`intel-media-driver`) and QSV (`vpl-gpu-rt`), thermald,
   `kvm-intel` and Intel microcode
 - Java, Python, C/C++, Nix and Typst development tools managed through hjem
+- A headless, container-isolated UniVPN SOCKS proxy and encrypted SSH target on
+  `ywxt-work`; Clash Verge routing is not modified
 
 Git, Git LFS, user Git settings and the OAuth credential helper are managed by
 hjem for `ywxt`. Docker is enabled on both hosts by the shared development
@@ -218,38 +220,31 @@ nix flake update --flake "$HOME/nixos-config"
 sudo nixos-rebuild switch --flake "$HOME/nixos-config#$(hostname)"
 ```
 
-Also, there are two alias, `update` and `rebuild`, to simplify commands below. These will update `flake.lock` and rebuild for the current machine.
+The `update` and `rebuild` aliases update `flake.lock` and rebuild the current
+machine.
 
 ## OpenHarmony development
 
 The OpenHarmony environment is imported only by `ywxt-work` through
-`modules/ohos-sdk.nix`. It includes:
+`modules/ohos.nix`. It includes:
 
-- `ohos-sdk`: OpenHarmony SDK 26.0.0.38 (API 26) from the `7.0-Release`
-  Linux x86_64 bundle
 - `ohos`: Docker environments for standard, small and mini
   device-system source development and builds
+- `hdc`: a directly executable host tool packaged from the OpenHarmony
+  7.0 SDK, with its udev rule
 - `git-repo` for the upstream multi-repository source tree; the shared hjem Git
   configuration supplies Git LFS
 - `dayu200-flash`: HiHope's Linux x86_64 RK3568 flashing utility with packaged
   Loader/Maskrom udev rules
 
-### SDK shell
+### HDC
 
-The unwrapped SDK is stored under `opt/ohos-sdk/26` in the package output and
-is also exposed as `passthru.sdk`. The `ohos-sdk` command starts an
-FHS-compatible environment with `OHOS_SDK_HOME`, `OHOS_NDK_HOME` and the SDK
-tools on `PATH`:
+`hdc` runs directly on the host through NixOS `nix-ld`; entering an SDK or FHS
+shell is not required:
 
 ```bash
-ohos-sdk
-clang --target=aarch64-linux-ohos \
-  --sysroot="$OHOS_NDK_HOME/sysroot" hello.c -o hello
 hdc list targets
 ```
-
-Only the upstream bundle's `ohos-sdk/linux` components are installed; Windows
-and device-side bundle contents are omitted.
 
 ### Dayu200/RK3568 source development
 
@@ -341,8 +336,8 @@ The package grants the active local session access only to Rockchip USB devices
 `2207:5000` and `2207:350a`. A serial console is normally available at
 `/dev/ttyUSB0` with a baud rate of 1500000.
 
-To update the packaged SDK, change `version`, `apiVersion`, the source URL and
-hash in `pkgs/ohos-sdk.nix`. Releases are published under
+To update the packaged HDC, change `version`, `apiVersion`, the source URL and
+hash in `pkgs/hdc.nix`. Releases are published under
 <https://repo.huaweicloud.com/openharmony/os/>.
 
 ## UniVPN SSH access on ywxt-work
@@ -359,29 +354,33 @@ SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
   sops secrets/ywxt-work-univpn.yaml
 ```
 
-On `ywxt-work`, edit with the host SSH key without exposing the recovery key:
+On `ywxt-work`, the UniVPN system module installs a helper that uses the host
+SSH key without exposing the recovery key or running the editor itself as root:
 
 ```bash
-sudo env \
-  SOPS_AGE_KEY_CMD='ssh-to-age -private-key -i /etc/ssh/ssh_host_ed25519_key' \
-  nix shell nixpkgs#sops nixpkgs#ssh-to-age --command \
-  sops secrets/ywxt-work-univpn.yaml
+univpn-secrets
 ```
+
+It expects the repository at `$HOME/nixos-config`. If it is elsewhere, set
+`NIXOS_CONFIG_DIR` to its root before running the command.
 
 The file is encrypted for the age recipient derived from the host SSH public
 key. `SOPS_AGE_SSH_PRIVATE_KEY_FILE` is not suitable for this converted
 recipient; the SSH private key must first be converted by `ssh-to-age` as shown
 above.
 
-Replace every placeholder under `univpn`. VPN credentials remain root-only and
-their plaintext exists only below `/run/secrets` on tmpfs.
+Set `gateway`, `port`, `username`, `password` and `ssh-host` under `univpn`.
+The VPN credentials and rendered Docker environment are root-only. `ssh-host`
+is readable locally because the user-owned SSH client uses it for matching, but
+all decrypted values exist only below `/run/secrets` on tmpfs.
 
 After rebuilding, the `ywxt-work` Hjem module generates an SSH configuration
-for `192.168.41.50`. Connections use `netcat-openbsd` as an SSH `ProxyCommand`
-and go directly through the local UniVPN SOCKS proxy without changing Mihomo:
+for the host stored in the encrypted `univpn.ssh-host` value. Connections use
+`netcat-openbsd` as an SSH `ProxyCommand` and go directly through the local
+UniVPN SOCKS proxy without changing Mihomo:
 
 ```bash
-ssh 192.168.41.50
+ssh <encrypted-ssh-host>
 ```
 
 Useful diagnostics:
@@ -389,5 +388,7 @@ Useful diagnostics:
 ```bash
 systemctl status univpn-image docker-univpn
 journalctl -u docker-univpn -f
+ss -ltn 'sport = :11080'
+ssh -G <encrypted-ssh-host> | grep -E '^(user|proxycommand) '
 curl --proxy socks5h://127.0.0.1:11080 https://example.com
 ```

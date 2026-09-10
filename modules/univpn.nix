@@ -10,6 +10,23 @@ let
   imageName = "localhost/univpn-proxy:2.3-microsocks";
   buildContext = ../docker/univpn;
   containerService = "docker-univpn";
+
+  editUniVpnSecrets = pkgs.writeShellApplication {
+    name = "univpn-secrets";
+    text = ''
+      config_directory="''${NIXOS_CONFIG_DIR:-$HOME/nixos-config}"
+      secret_file="$config_directory/secrets/ywxt-work-univpn.yaml"
+
+      if [[ ! -f $secret_file ]]; then
+        echo "univpn-secrets: file not found: $secret_file" >&2
+        echo "Set NIXOS_CONFIG_DIR if the repository is stored elsewhere." >&2
+        exit 1
+      fi
+
+      export SOPS_AGE_KEY_CMD="sudo ${pkgs.ssh-to-age}/bin/ssh-to-age -private-key -i /etc/ssh/ssh_host_ed25519_key"
+      exec ${pkgs.sops}/bin/sops "$secret_file"
+    '';
+  };
 in
 {
   imports = [ inputs.sops-nix.nixosModules.sops ];
@@ -18,6 +35,7 @@ in
     pkgs.age
     pkgs.sops
     pkgs.ssh-to-age
+    editUniVpnSecrets
   ];
 
   sops = {
@@ -29,6 +47,7 @@ in
       "univpn/port" = { };
       "univpn/username" = { };
       "univpn/password" = { };
+      "univpn/ssh-host".mode = "0444";
     };
 
     templates."univpn.env" = {
