@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   lib,
   pkgs,
   ...
@@ -16,34 +15,8 @@ let
     name = "univpn-docker-context";
   };
   containerService = "docker-univpn";
-
-  editUniVpnSecrets = pkgs.writeShellApplication {
-    name = "univpn-secrets";
-    text = ''
-      config_directory="''${NIXOS_CONFIG_DIR:-$HOME/nixos-config}"
-      secret_file="$config_directory/secrets/ywxt-work-univpn.yaml"
-
-      if [[ ! -f $secret_file ]]; then
-        echo "univpn-secrets: file not found: $secret_file" >&2
-        echo "Set NIXOS_CONFIG_DIR if the repository is stored elsewhere." >&2
-        exit 1
-      fi
-
-      export SOPS_AGE_KEY_CMD="sudo ${pkgs.ssh-to-age}/bin/ssh-to-age -private-key -i /etc/ssh/ssh_host_ed25519_key"
-      exec ${pkgs.sops}/bin/sops "$secret_file"
-    '';
-  };
 in
 {
-  imports = [ inputs.sops-nix.nixosModules.sops ];
-
-  environment.systemPackages = [
-    pkgs.age
-    pkgs.sops
-    pkgs.ssh-to-age
-    editUniVpnSecrets
-  ];
-
   # NixOS generates /etc/ssh/ssh_config without an ssh_config.d wildcard.
   # Add the runtime SOPS fragment through the module's supported hook so both
   # command-line OpenSSH and clients invoking it with the system config see it.
@@ -53,8 +26,6 @@ in
 
   sops = {
     defaultSopsFile = ../secrets/ywxt-work-univpn.yaml;
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-
     secrets = {
       "univpn/gateway" = { };
       "univpn/port" = { };
@@ -94,7 +65,10 @@ in
     before = [ "${containerService}.service" ];
     requires = [ "docker.service" ];
     wants = [ "network-online.target" ];
-    after = [ "docker.service" "network-online.target" ];
+    after = [
+      "docker.service"
+      "network-online.target"
+    ];
     path = [ pkgs.docker ];
     script = ''
       docker build --pull=false --tag ${lib.escapeShellArg imageName} ${lib.escapeShellArg (toString buildContext)}
@@ -121,7 +95,10 @@ in
 
   systemd.services.${containerService} = {
     requires = [ "univpn-image.service" ];
-    after = [ "univpn-image.service" "sops-install-secrets.service" ];
+    after = [
+      "univpn-image.service"
+      "sops-install-secrets.service"
+    ];
     serviceConfig.Restart = lib.mkForce "always";
   };
 }

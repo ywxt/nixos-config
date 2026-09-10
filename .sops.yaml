@@ -3,6 +3,11 @@ keys:
   - &recovery age1pjm0aaccxj5r67zrxt6ypluy2w53pd086u2768meu5nnzyzp6sdsgugg9x
 
 creation_rules:
+  - path_regex: secrets/ywxt-work-opencode\.yaml$
+    key_groups:
+      - age:
+          - *ywxt_work
+          - *recovery
   - path_regex: secrets/ywxt-work-univpn\.yaml$
     key_groups:
       - age:

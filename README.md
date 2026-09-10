@@ -354,11 +354,15 @@ SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
   sops secrets/ywxt-work-univpn.yaml
 ```
 
-On `ywxt-work`, the UniVPN system module installs a helper that uses the host
-SSH key without exposing the recovery key or running the editor itself as root:
+On `ywxt-work`, the SOPS system module installs a generic helper that uses the
+host SSH key without exposing the recovery key or running the editor itself as
+root. With no argument it lets you select a file from the repository's
+`secrets` directory; a filename or path can also be supplied directly:
 
 ```bash
-univpn-secrets
+sops-secrets
+sops-secrets ywxt-work-univpn.yaml
+sops-secrets /path/to/secrets-directory
 ```
 
 It expects the repository at `$HOME/nixos-config`. If it is elsewhere, set
