@@ -38,7 +38,7 @@
     pkgs.python3
     pkgs.usbutils
     pkgs.hdc
-    pkgs.hihope-iot
+    pkgs.dayu200-flash
     pkgs.ohos-build-env
   ];
 
@@ -46,6 +46,6 @@
   # services.udev.packages is merged with contributions from other modules.
   services.udev.packages = [
     pkgs.hdc
-    pkgs.hihope-iot
+    pkgs.dayu200-flash
   ];
 }

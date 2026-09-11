@@ -1,0 +1,3 @@
+# HiHope DAYU200/RK3568 in Rockchip Loader and Maskrom modes.
+SUBSYSTEM=="usb", ATTR{idVendor}=="2207", ATTR{idProduct}=="5000", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="2207", ATTR{idProduct}=="350a", MODE="0666"
