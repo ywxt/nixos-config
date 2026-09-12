@@ -6,5 +6,6 @@
     ./git.nix
     ./shell.nix
     ./xdg.nix
+    ./opencode.nix
   ];
 }

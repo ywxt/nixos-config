@@ -14,6 +14,7 @@
     ../../modules/monitor.nix
     ../../modules/nix-settings.nix
     ../../modules/annepro2.nix
+    ../../modules/sops.nix
   ];
 
   networking.hostName = "ywxt-ws";

@@ -16,7 +16,6 @@
     ../../modules/ohos.nix
     ../../modules/sops.nix
     ../../modules/univpn.nix
-    ../../home/ywxt/opencode.nix
   ];
 
   networking.hostName = "ywxt-work";

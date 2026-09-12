@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   json = pkgs.formats.json { };
@@ -7,19 +7,15 @@ in
   sops.secrets."opencode-api-key" = {
     sopsFile = ../../secrets/ywxt-work-opencode.yaml;
     key = "opencode/api-key";
-    owner = "ywxt";
-    mode = "0400";
   };
   sops.secrets."opencode-base-url" = {
     sopsFile = ../../secrets/ywxt-work-opencode.yaml;
     key = "opencode/base-url";
-    owner = "ywxt";
-    mode = "0400";
   };
 
-  hjem.users.ywxt.packages = [ pkgs.opencode ];
+  packages = [ pkgs.opencode ];
 
-  hjem.users.ywxt.xdg.config.files."opencode/opencode.json" = {
+  xdg.config.files."opencode/opencode.json" = {
     clobber = true;
     source = json.generate "opencode.json" {
       "$schema" = "https://opencode.ai/config.json";
@@ -27,8 +23,8 @@ in
         name = "火山AI网关";
         npm = "@ai-sdk/openai-compatible";
         options = {
-          baseURL = "{file:/run/secrets/opencode-base-url}";
-          apiKey = "{file:/run/secrets/opencode-api-key}";
+          baseURL = "{file:${config.sops.secrets."opencode-base-url".path}}";
+          apiKey = "{file:${config.sops.secrets."opencode-api-key".path}}";
         };
         models = {
           deepseek-v4-flash.name = "DeepSeek-V4-Flash";
