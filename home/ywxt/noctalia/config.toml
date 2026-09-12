@@ -98,6 +98,10 @@ categories = true
 show_icons = true
 sort_by_usage = true
 
+[shell.screenshot]
+confirm_region = true # confirm region captures with Enter or Space
+annotate = true       # open the annotator before saving or copying
+
 [theme]
 builtin = "Noctalia"
 mode = "auto"
