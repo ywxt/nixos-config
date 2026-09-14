@@ -7,5 +7,6 @@
     ./shell.nix
     ./xdg.nix
     ./opencode.nix
+    ./neovim.nix
   ];
 }

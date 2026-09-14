@@ -5,7 +5,6 @@
     # Command-line applications
     fastfetch
     typst
-    neovim
 
     # Command-line archive tools
     gnutar
