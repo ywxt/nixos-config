@@ -44,6 +44,9 @@ User-level configuration is managed with hjem instead of Home Manager.
 - Java, Python, C/C++, Nix and Typst development tools managed through hjem
 - A headless, container-isolated UniVPN SOCKS proxy and encrypted SSH target on
   `ywxt-work`; Clash Verge routing is not modified
+- sops-nix secrets decrypted with per-host age keys stored at
+  `/var/lib/sops-nix/key.txt`; their recovery-key-encrypted backups live in
+  `secrets/host-keys/`
 
 Git, Git LFS, user Git settings and the OAuth credential helper are managed by
 hjem for `ywxt`. Docker is enabled on both hosts by the shared development
@@ -97,8 +100,96 @@ device authorization currently supports GitHub and GitLab; use SSH or separately
 configured HTTPS credentials for other platforms. See the
 [git-credential-oauth documentation](https://github.com/hickford/git-credential-oauth#browserless-systems).
 
-This split prepares the user configuration for a server; it does not register a
-server host or change system-level desktop, networking or boot modules.
+This split prepares the user configuration for a server; it does not register
+a server host or change system-level desktop, networking or boot modules.
+
+## Secrets management
+
+Secrets are managed with sops-nix and age. Each host owns an independent age
+keypair: the private key lives at `/var/lib/sops-nix/key.txt` (root-only,
+persistent) and its public key is anchored in `.sops.yaml` (`&ywxt_work`,
+`&ywxt_ws`). Every secrets file is encrypted to its host's key plus the
+offline `&recovery` key, so the recovery key alone can always decrypt or
+re-encrypt everything. Host SSH keys are deliberately not used; rotating them
+does not affect secrets.
+
+Each private key is backed up in `secrets/host-keys/<hostname>.key`, a
+sops-encrypted blob whose only recipient is the recovery key. The repository
+therefore carries everything needed to reinstall a host, except the recovery
+key itself. The key file is not managed by NixOS; activation fails when it is
+missing, so restore it before the first rebuild of a fresh installation.
+
+### Editing secrets
+
+On a configured host, the `sops-secrets` helper decrypts through the host's
+own key without exposing it or running the editor as root. With no argument it
+lists the repository's `secrets` directory; a bare filename or path can also
+be supplied directly:
+
+```bash
+sops-secrets
+sops-secrets ywxt-work-univpn.yaml
+sops-secrets /path/to/secrets-directory
+```
+
+It expects the repository at `$HOME/nixos-config`. If it is elsewhere, set
+`NIXOS_CONFIG_DIR` to its root before running the command.
+
+With the offline recovery key, on any machine:
+
+```bash
+SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
+  sops secrets/ywxt-work-univpn.yaml
+```
+
+### Restoring a host key
+
+Decrypt the host's key backup into place before the first activation of a
+fresh installation, or whenever `/var/lib/sops-nix/key.txt` is lost:
+
+```bash
+SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
+  sops -d secrets/host-keys/<hostname>.key \
+  | sudo install -Dm600 /dev/stdin /var/lib/sops-nix/key.txt
+```
+
+If the key is lost together with its machine, issue a replacement with
+`age-keygen`, update the host's anchor in `.sops.yaml`, and re-encrypt its
+secrets files with `sops updatekeys` using the recovery key.
+
+### Adding a new host
+
+1. Generate the host's age keypair and note the public key it prints:
+
+   ```bash
+   age-keygen -o /tmp/<hostname>.txt
+   ```
+
+2. Anchor the public key in `.sops.yaml` and add a creation rule for the
+   host's future secret files, listing the new anchor and `*recovery`. The
+   recovery-only rule for `secrets/host-keys/` already covers the backup.
+
+3. Back the private key up into the repository, encrypted to the recovery
+   key only, and remove the plaintext copy:
+
+   ```bash
+   install -m600 /tmp/<hostname>.txt secrets/host-keys/<hostname>.key
+   sops -e -i secrets/host-keys/<hostname>.key
+   rm /tmp/<hostname>.txt
+   ```
+
+4. Create the host's secrets with `sops secrets/<hostname>-<name>.yaml`; the
+   creation rule encrypts them automatically. If the host should also read
+   existing shared files such as `secrets/ywxt-work-opencode.yaml`, add its
+   anchor to that rule and run `sops updatekeys` on the file with the
+   recovery key.
+
+5. Copy the closest host under `hosts/`, adjust the hostname, hardware
+   configuration and module selection, and register the host as a
+   `nixosConfigurations` entry in `flake.nix`.
+
+6. During installation, restore the key backup as shown above before
+   running `nixos-install`.
 
 ## Destructive clean installation
 
@@ -157,6 +248,18 @@ Verify that every target filesystem is mounted at the location expected by
 ```bash
 findmnt -R /mnt
 lsblk -f /dev/nvme0n1
+```
+
+Restore the host's SOPS age key from its recovery-key-encrypted backup, so the
+first activation can decrypt its secrets. The installer image does not ship
+`sops`, so enter a shell providing it first. Keep the recovery key on the same
+removable medium as the configuration and unmount that medium afterwards:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' shell nixpkgs#sops
+SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
+  sops -d /tmp/nixos-config/secrets/host-keys/ywxt-ws.key \
+  | install -Dm600 /dev/stdin /mnt/var/lib/sops-nix/key.txt
 ```
 
 Install directly from the RAM-backed configuration. It is used only to build the
@@ -347,31 +450,9 @@ namespace. A SOCKS5 listener is published only on `127.0.0.1:11080`; the host's
 routes, DNS and Mihomo configuration are not changed. The listener is available
 only while the VPN tunnel has an installed route.
 
-Edit the encrypted settings with the offline recovery key:
-
-```bash
-SOPS_AGE_KEY_FILE=/safe/path/recovery-age-key.txt \
-  sops secrets/ywxt-work-univpn.yaml
-```
-
-On `ywxt-work`, the SOPS system module installs a generic helper that uses the
-host SSH key without exposing the recovery key or running the editor itself as
-root. With no argument it lets you select a file from the repository's
-`secrets` directory; a filename or path can also be supplied directly:
-
-```bash
-sops-secrets
-sops-secrets ywxt-work-univpn.yaml
-sops-secrets /path/to/secrets-directory
-```
-
-It expects the repository at `$HOME/nixos-config`. If it is elsewhere, set
-`NIXOS_CONFIG_DIR` to its root before running the command.
-
-The file is encrypted for the age recipient derived from the host SSH public
-key. `SOPS_AGE_SSH_PRIVATE_KEY_FILE` is not suitable for this converted
-recipient; the SSH private key must first be converted by `ssh-to-age` as shown
-above.
+The settings live in `secrets/ywxt-work-univpn.yaml`; edit them with the
+`sops-secrets` helper on `ywxt-work` or with the offline recovery key, as
+described in [Secrets management](#secrets-management).
 
 Set `gateway`, `port`, `username`, `password` and `ssh-host` under `univpn`.
 The VPN credentials and rendered Docker environment are root-only. `ssh-host`

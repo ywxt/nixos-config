@@ -61,7 +61,7 @@ let
         exit 1
       fi
 
-      export SOPS_AGE_KEY_CMD="sudo ${pkgs.ssh-to-age}/bin/ssh-to-age -private-key -i /etc/ssh/ssh_host_ed25519_key"
+      export SOPS_AGE_KEY_CMD="sudo ${pkgs.coreutils}/bin/cat /var/lib/sops-nix/key.txt"
       exec ${pkgs.sops}/bin/sops "$target"
     '';
   };
@@ -143,12 +143,11 @@ in
   environment.systemPackages = [
     pkgs.age
     pkgs.sops
-    pkgs.ssh-to-age
     editSecrets
   ];
 
   sops = {
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+    age.keyFile = "/var/lib/sops-nix/key.txt";
 
     secrets = mkMerge (
       mapAttrsToList (

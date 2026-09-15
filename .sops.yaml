@@ -1,9 +1,13 @@
 keys:
-  - &ywxt_work age1qk0fq4x0rm5v79caez6nlgwmesw2yzuy250f03zwpj4r59z4r3uspp6qlv
-  - &ywxt_ws age1hhpmlly2jh63qw3dtpd7zuwjrz24k00k289pwef2cy74tfruc94sxn0qly
+  - &ywxt_work age17ymsfehq879pngqxza2tjjxhaqyqwss642rd3zeq059azzfym99sz0v4dz
+  - &ywxt_ws age13f5yfwndfgd63hrjcz8lt253t6ju24w985fd5n4el06m9euz4quqqqw4ew
   - &recovery age1pjm0aaccxj5r67zrxt6ypluy2w53pd086u2768meu5nnzyzp6sdsgugg9x
 
 creation_rules:
+  - path_regex: secrets/host-keys/.*
+    key_groups:
+      - age:
+          - *recovery
   - path_regex: secrets/ywxt-work-opencode\.yaml$
     key_groups:
       - age:
