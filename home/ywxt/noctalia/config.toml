@@ -8,18 +8,16 @@ ui_scale = 1.0
 
 [bar.main]
 background_opacity = 1.0
-start = ["launcher", "workspaces", "cpu", "media"]
-center = ["active_window"]
+start = ["control-center", "workspaces", "cpu", "active_window"]
+center = ["media", "spacer", "clock"]
 end = [
     "tray",
     "wallhaven",
-    "notifications",
     "clipboard",
     "network",
     "bluetooth",
     "volume",
-    "clock",
-    "control-center",
+    "notifications",
     "session",
 ]
 margin_edge = 0
@@ -27,7 +25,7 @@ margin_ends = 0
 position = "top"
 radius = 9
 radius_top_left = 0
-radius_top_righ = 0
+radius_top_right = 0
 reserve_space = true
 thickness = 34
 
@@ -49,7 +47,7 @@ timeout = 330
 
 [idle.behavior.suspend]
 action = "lock_and_suspend"
-enable = true
+enabled = true
 timeout = 900
 
 [location]
@@ -127,6 +125,9 @@ type = "sysmon"
 
 [widget.wallhaven]
 type = "noctalia/wallhaven:wallhaven"
+
+[widget.spacer]
+anchor = true
 
 [widget.clock]
 format = "{:%H:%M} {:%d/%m}"
