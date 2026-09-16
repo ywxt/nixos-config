@@ -37,6 +37,7 @@
       nerd-fonts.symbols-only
       material-symbols
       lxgw-wenkai-tc
+      th-tshyn
     ];
   };
 }

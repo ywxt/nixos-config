@@ -5,4 +5,5 @@ final: _prev: {
   dayu200-flash = final.callPackage ./dayu200 { };
   ohos-build-env = final.callPackage ./ohos-build-env.nix { };
   rime-huma = final.callPackage ./rime-huma.nix { };
+  th-tshyn = final.callPackage ./th-tshyn.nix { };
 }
