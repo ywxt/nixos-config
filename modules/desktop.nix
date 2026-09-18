@@ -28,7 +28,7 @@
       ];
     };
     packages = with pkgs; [
-      iosevka
+      iosevka-bin
       jetbrains-mono
       noto-fonts
       noto-fonts-cjk-sans
