@@ -33,6 +33,7 @@
         background_opacity 0.88
         dynamic_background_opacity yes
         background_blur 32
+        mouse_map ctrl+left click ungrabbed mouse_handle_click link
       '';
     };
     "kitty/dark-theme.auto.conf" = {
