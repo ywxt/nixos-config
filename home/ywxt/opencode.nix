@@ -31,12 +31,17 @@ in
           deepseek-v4-pro.name = "DeepSeek-V4-Pro";
           "qwen3.7-plus".name = "Qwen3.7-Plus";
           "qwen3.7-max".name = "Qwen3.7-Max";
+          "qwen3.8-flash".name = "Qwen3.8-Flash";
+          "qwen3.8-max".name = "Qwen3.8-Max";
           "doubao-seed-2.1-pro".name = "DouBao-Seed-2.1-Pro";
           MiniMax-M3.name = "MiniMax-M3";
           "glm-5.2".name = "GLM-5.2";
           "glm-5.3".name = "GLM-5.3";
           "glm-5.3-flash".name = "GLM-5.3-Flash";
+          "zhipu/glm-5.3".name = "Zhipu-GLM-5.3";
           hy3.name = "HunYuan3";
+          "kimi-k2.7-code".name = "Kimi-K2.7-Code";
+          "kimi-k3".name = "Kimi-K3";
         };
       };
     };
