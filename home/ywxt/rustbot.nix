@@ -1,5 +1,8 @@
 { pkgs, ... }:
 
 {
-  packages = [ pkgs.rustbot-cli ];
+  packages = [
+    pkgs.rustbot-cli
+    pkgs.nodejs
+  ];
 }
