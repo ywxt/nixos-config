@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 {
+  /*
+    CLI tools only: nothing here may depend on a graphical environment.
+    GUI applications belong in desktop.nix instead.
+  */
   packages = with pkgs; [
     # Command-line applications
     fastfetch
