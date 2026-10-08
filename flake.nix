@@ -97,6 +97,7 @@
                 imports = [
                   ./home/ywxt
                   ./home/ywxt/desktop.nix
+                  ./home/ywxt/rustbot.nix
                 ];
               };
             };
