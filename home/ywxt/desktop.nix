@@ -15,6 +15,7 @@
 
   packages = with pkgs; [
     firefox
+    google-chrome
     imv
     obs-studio
     telegram-desktop
