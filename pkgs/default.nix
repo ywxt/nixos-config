@@ -3,11 +3,6 @@ final: _prev: {
   bot-gate = final.callPackage ./bot-gate.nix { };
   bot-metric = final.callPackage ./bot-metric.nix { };
   colloid-kvantum = final.callPackage ./colloid-kvantum.nix { };
-  tela-circle-icon-theme = _prev.tela-circle-icon-theme.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      find -L $out/share/icons -type l -delete
-    '';
-  });
   hdc = final.callPackage ./hdc.nix { };
   dayu200-flash = final.callPackage ./dayu200 { };
   ohos-build-env = final.callPackage ./ohos-build-env.nix { };
