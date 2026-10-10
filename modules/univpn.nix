@@ -31,7 +31,8 @@ in
       "univpn/port" = { };
       "univpn/username" = { };
       "univpn/password" = { };
-      "univpn/ssh-host" = { };
+      "univpn/ssh-host-1" = { };
+      "univpn/ssh-host-2" = { };
     };
 
     templates."univpn.env" = {
@@ -51,9 +52,14 @@ in
     templates."univpn-ssh.conf" = {
       mode = "0444";
       content = ''
-        Host univpn-work
-          HostName ${config.sops.placeholder."univpn/ssh-host"}
+        Host univpn-work-1
+          HostName ${config.sops.placeholder."univpn/ssh-host-1"}
           User wheel
+          ProxyCommand ${pkgs.netcat-openbsd}/bin/nc -x 127.0.0.1:11080 -X 5 %h %p
+
+        Host univpn-work-2
+          HostName ${config.sops.placeholder."univpn/ssh-host-2"}
+          User root
           ProxyCommand ${pkgs.netcat-openbsd}/bin/nc -x 127.0.0.1:11080 -X 5 %h %p
       '';
     };

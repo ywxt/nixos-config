@@ -454,20 +454,25 @@ The settings live in `secrets/ywxt-work-univpn.yaml`; edit them with the
 `sops-secrets` helper on `ywxt-work` or with the offline recovery key, as
 described in [Secrets management](#secrets-management).
 
-Set `gateway`, `port`, `username`, `password` and `ssh-host` under `univpn`.
-The VPN credentials and rendered Docker environment are root-only. `ssh-host`
+Set `gateway`, `port`, `username`, `password` and `ssh-host-1` under `univpn`.
+The VPN credentials and rendered Docker environment are root-only. `ssh-host-1`
 is readable locally because the user-owned SSH client uses it for matching, but
-all decrypted values exist only below `/run/secrets` on tmpfs.
+all decrypted values exist only below `/run/secrets` on tmpfs. The optional
+`ssh-host-2` key renders a second `Host
+univpn-work-2`
+entry.
 
 After rebuilding, the UniVPN system module adds an `Include` to NixOS's
 generated `/etc/ssh/ssh_config`, pointing at the runtime-only
 `/run/secrets/rendered/univpn-ssh.conf`. It does not manage or overwrite the
-user's `~/.ssh/config`. SOPS renders a normal `Host univpn-work` entry with the
-decrypted `HostName` and a `netcat-openbsd` SSH `ProxyCommand`. Connections go
-directly through the local UniVPN SOCKS proxy without changing Mihomo:
+user's `~/.ssh/config`. SOPS renders normal `Host univpn-work-1` and `Host
+univpn-work-2` entries with the decrypted `HostName` and a `netcat-openbsd` SSH
+`ProxyCommand`. Connections go directly through the local UniVPN SOCKS proxy
+without changing Mihomo:
 
 ```bash
-ssh univpn-work
+ssh univpn-work-1
+ssh univpn-work-2
 ```
 
 Useful diagnostics:
@@ -476,6 +481,6 @@ Useful diagnostics:
 systemctl status univpn-image docker-univpn
 journalctl -u docker-univpn -f
 ss -ltn 'sport = :11080'
-ssh -G univpn-work | grep -E '^(user|proxycommand) '
+ssh -G univpn-work-1 | grep -E '^(user|proxycommand) '
 curl --proxy socks5h://127.0.0.1:11080 https://example.com
 ```
