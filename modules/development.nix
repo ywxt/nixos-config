@@ -1,7 +1,13 @@
 { pkgs, ... }:
 
 {
-  environment.systemPackages = [ pkgs.bashInteractive ];
+  environment.systemPackages = [
+    pkgs.bashInteractive
+    pkgs.perf
+  ];
+
+  # Allow unprivileged users to run perf on their own processes
+  boot.kernel.sysctl."kernel.perf_event_paranoid" = 1;
 
   virtualisation.docker = {
     enable = true;
