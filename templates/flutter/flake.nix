@@ -53,8 +53,9 @@
             "36.0.0"
           ];
 
-          # NDK, for projects with native plugins. Flutter 3.47 pins
-          # 28.2.13676358. Example: [ "28.2.13676358" ]
+          # NDK, for projects with native code (flutter_rust_bridge etc.).
+          # Requires BOTH the version list and includeNDK = true below.
+          # Flutter 3.47 pins 28.2.13676358.
           ndkVersions = [ ];
 
           # System images: the defaults would fetch every type × ABI
