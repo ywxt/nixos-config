@@ -96,6 +96,25 @@
                 ;
               includeEmulator = true;
               includeSystemImages = true;
+              # The composition writes license hash files at build time (the
+              # store path is read-only, so `flutter doctor --android-licenses`
+              # cannot accept anything later). Only android-sdk-license is
+              # written by default, but sdkmanager — which flutter doctor runs
+              # to validate licenses — requires the hashes of every license
+              # referenced by the repository, otherwise it reports
+              # "Some Android licenses not accepted". These names cover all
+              # licenses known to androidenv's repo.json.
+              extraLicenses = [
+                "android-sdk-arm-dbt-license"
+                "android-sdk-preview-license"
+                "android-googletv-license"
+                "android-googlexr-license"
+                "google-gdk-license"
+                "intel-android-extra-license"
+                "intel-android-sysimage-license"
+                "microxr-sysimage-license"
+                "mips-android-sysimage-license"
+              ];
             }).androidsdk;
         in
         {
