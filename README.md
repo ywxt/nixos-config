@@ -30,7 +30,7 @@ modules/             Shared NixOS modules
 home/ywxt/           Shared hjem configuration (CLI only)
 home/ywxt/desktop/   Desktop add-on: niri, noctalia, themes, kitty, thunar
 pkgs/                Packages exposed through the flake overlay
-templates/           Project templates (rust, frontend, python, cpp)
+templates/           Project templates (rust, frontend, python, cpp, flutter)
 secrets/             sops-encrypted secrets and host-key backups
 docker/              Container build contexts (ohos, univpn)
 docs/                Screenshot and detailed guides

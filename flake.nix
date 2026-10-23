@@ -58,6 +58,11 @@
           path = ./templates/cpp;
           description = "C/C++ development environment with Clang, CMake and Ninja";
         };
+
+        flutter = {
+          path = ./templates/flutter;
+          description = "Flutter and Android development environment with emulator";
+        };
       };
 
       nixosConfigurations.ywxt-ws = nixpkgs.lib.nixosSystem {

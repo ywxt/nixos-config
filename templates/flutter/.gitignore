@@ -1,0 +1,42 @@
+# direnv
+/.direnv
+
+# project-local Android AVDs (emulator images and user data, can be large)
+/.avd/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+**/doc/api/
+.fvm/
+coverage/
+
+# Android
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+key.properties
+*.jks
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/launch.json
+
+# Symbolication / obfuscation output
+app.*.symbols
+app.*.map.json
