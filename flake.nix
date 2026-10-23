@@ -74,7 +74,7 @@
                 enable = true;
                 imports = [
                   ./home/ywxt
-                  ./home/ywxt/desktop.nix
+                  ./home/ywxt/desktop
                 ];
               };
             };
@@ -96,7 +96,7 @@
                 enable = true;
                 imports = [
                   ./home/ywxt
-                  ./home/ywxt/desktop.nix
+                  ./home/ywxt/desktop
                 ];
               };
             };

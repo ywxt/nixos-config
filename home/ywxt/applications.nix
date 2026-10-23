@@ -3,7 +3,7 @@
 {
   /*
     CLI tools only: nothing here may depend on a graphical environment.
-    GUI applications belong in desktop.nix instead.
+    GUI applications belong in desktop/ instead.
   */
   packages = with pkgs; [
     # Command-line applications

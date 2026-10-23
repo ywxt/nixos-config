@@ -66,7 +66,7 @@ hjem.users.ywxt.imports = [
 # Desktop (ywxt-ws and ywxt-work)
 hjem.users.ywxt.imports = [
   ./home/ywxt
-  ./home/ywxt/desktop.nix
+  ./home/ywxt/desktop
 ];
 ```
 

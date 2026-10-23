@@ -37,7 +37,6 @@ let
     include "outputs.kdl"
 
     ${builtins.readFile ./niri/config.kdl}
-    spawn-at-startup "noctalia"
   '';
   validatedConfig = pkgs.runCommand "niri-config" { nativeBuildInputs = [ pkgs.niri ]; } ''
     mkdir -p $out
