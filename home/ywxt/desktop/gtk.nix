@@ -5,7 +5,7 @@ let
     [Settings]
     gtk-theme-name=adw-gtk3
     gtk-icon-theme-name=Tela-circle
-    gtk-font-name=Adwaita Sans 11
+    gtk-font-name=Noto Sans 11
     gtk-cursor-theme-name=Adwaita
     gtk-cursor-theme-size=24
   '';
@@ -14,7 +14,6 @@ in
   packages = with pkgs; [
     nwg-look
     adw-gtk3
-    adwaita-fonts
     adwaita-icon-theme
     tela-circle-icon-theme
   ];
