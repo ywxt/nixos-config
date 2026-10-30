@@ -13,7 +13,7 @@ Manager.
 
 | Host | Hardware | Add-on modules |
 | --- | --- | --- |
-| `ywxt-ws` | AMD desktop | `gaming`, `annepro2`, `ios` |
+| `ywxt-ws` | AMD desktop | `gaming`, `annepro2` |
 | `ywxt-work` | Intel i7-12700, UHD Graphics 770 | `ohos`, `univpn`, `space-nav` |
 
 Both share the same base — systemd-boot with the latest kernel, zram,

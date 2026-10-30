@@ -10,7 +10,6 @@
     ../../modules/desktop.nix
     ../../modules/gaming.nix
     ../../modules/development.nix
-    ../../modules/ios.nix
     ../../modules/input-method.nix
     ../../modules/monitor.nix
     ../../modules/nix-settings.nix

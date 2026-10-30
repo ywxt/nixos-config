@@ -19,3 +19,8 @@ creation_rules:
       - age:
           - *ywxt_work
           - *recovery
+  - path_regex: secrets/ywxt-work-blue-agent\.yaml$
+    key_groups:
+      - age:
+          - *ywxt_work
+          - *recovery

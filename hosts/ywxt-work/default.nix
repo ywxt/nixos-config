@@ -16,6 +16,7 @@
     ../../modules/ohos.nix
     ../../modules/sops.nix
     ../../modules/univpn.nix
+    ../../modules/blue-agent.nix
   ];
 
   networking.hostName = "ywxt-work";
@@ -44,6 +45,14 @@
 
   programs.fish.enable = true;
   security.sudo.wheelNeedsPassword = true;
+
+  # BlueZone asset heartbeat agent — unprivileged port of the Windows
+  # BlueZoneAssetManager agent. The GitCode token and the hardcoded
+  # registration (asset code + employee id) live encrypted in
+  # secrets/ywxt-work-blue-agent.yaml and are rendered by sops-nix to
+  # /run/secrets/rendered/blue-agent.json (0400, owned by the
+  # auto-detected agent user).
+  services.blue-agent.enable = true;
 
   system.stateVersion = "26.05";
 }

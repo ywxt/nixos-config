@@ -1,5 +1,6 @@
 final: _prev: {
   annepro2-udev-rules = final.callPackage ./annepro2-udev-rules.nix { };
+  blue-agent = final.callPackage ./blue-agent { };
   bot-gate = final.callPackage ./bot-gate.nix { };
   bot-metric = final.callPackage ./bot-metric.nix { };
   colloid-kvantum = final.callPackage ./colloid-kvantum.nix { };
