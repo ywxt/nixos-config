@@ -13,8 +13,9 @@
 #     hardcoded asset code / employee id — is rendered by sops-nix into
 #     /run/secrets/rendered/blue-agent.json (0400, owned by the
 #     auto-detected agent user); nothing lives in /etc or $HOME;
-#   * the only writable state is the throttle file in XDG_RUNTIME_DIR
-#     (tmpfs); logging goes to the journal.
+#   * the agent keeps no local state: the 12h throttle uses the last
+#     timestamp in the remote heartbeat array; logging goes to the
+#     journal.
 #
 # Registration is declarative: edit secrets/<host>-blue-agent.yaml with
 # sops-secrets and rebuild — there is no interactive registration and

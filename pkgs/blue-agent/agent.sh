@@ -5,12 +5,13 @@
 # from the BlueZoneAssetManager distribution. Key differences:
 #
 #   * Runs as a regular user (invoked by a systemd *user* timer); no
-#     elevation anywhere. It leaves no files in $HOME: the whole
+#     elevation anywhere. It keeps no local state: the whole
 #     configuration — including the GitCode token and the hardcoded
 #     asset code / employee id — is read from the sops-nix rendered
 #     file /run/secrets/rendered/blue-agent.json (owner-only), and the
-#     only writable state is the throttle file in XDG_RUNTIME_DIR
-#     (tmpfs, per-login). Logging goes to stdout → the journal.
+#     12h throttle consults the last timestamp in the remote heartbeat
+#     array, which the push fetches anyway (transient HTTP scratch in
+#     TMPDIR aside). Logging goes to stdout → the journal.
 #   * No self-update: the script is built from this repository and
 #     replaced by `nixos-rebuild`. This replaces the original
 #     repo-pull + RSA-signature self-update mechanism, which has no
@@ -33,12 +34,6 @@ set -euo pipefail
 AGENT_NAME="blue-agent"
 AGENT_VERSION="1.0.0"
 
-# Throttle state lives in tmpfs: it only deduplicates pushes within one
-# login session; missed windows are already handled by the timer's
-# Persistent=true.
-RUNTIME_DIR="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/blue-agent"
-STATE_FILE="$RUNTIME_DIR/state.json"
-
 # Config resolution: explicit override, sops-nix rendered template
 # (keep in sync with modules/blue-agent.nix), /etc fallback.
 if [[ -n ${BLUE_AGENT_CONFIG:-} ]]; then
@@ -49,11 +44,10 @@ else
     CONFIG_FILE=/etc/blue-agent/config.json
 fi
 
-# Temp files for HTTP response bodies, cleaned up on exit.
+# Temp files for HTTP response bodies, cleaned up on exit — the only
+# files the agent ever touches.
 GET_FILE=""
 PUT_FILE=""
-
-mkdir -p "$RUNTIME_DIR"
 
 # Journal-bound logging; never emit the access token.
 log() {
@@ -208,10 +202,14 @@ remote_path_for() {
 # Append one heartbeat to the remote JSON array via the GitCode
 # contents API. Retries sha conflicts (409/422, re-GET) and server or
 # network errors (exponential backoff), up to 10 rounds — the same
-# strategy as Push-Heartbeat in the original agent.
+# strategy as Push-Heartbeat in the original agent. The remote array
+# doubles as the throttle state: returns 2 (skip) when its last
+# heartbeat is fresher than push_interval_hours and the caller did
+# not pass --force.
 push_heartbeat() {
-    local remote_path=$1 payload=$2 token=$3
+    local remote_path=$1 payload=$2 token=$3 force=$4
     local uri attempt code sha content_b64 existing newjson new_b64 body method n resp
+    local last_ts last_epoch now_s
     uri="$API_ENDPOINT/repos/$OWNER/$REPO/contents/$remote_path?access_token=$token"
 
     for attempt in 1 2 3 4 5 6 7 8 9 10; do
@@ -238,6 +236,20 @@ push_heartbeat() {
         else
             log "读取远端记录失败 HTTP=$code URI=$uri" ERROR
             return 1
+        fi
+
+        # Throttle: the remote array is the state. Skip when its last
+        # heartbeat is fresher than push_interval_hours, unless forced.
+        # An unparseable timestamp counts as "never".
+        if [[ $force != "--force" && -n $existing ]]; then
+            last_ts=$(jq -r 'if type == "array" and length > 0 then (.[-1].timestamp // empty) else empty end' <<<"$existing" 2>/dev/null) || last_ts=""
+            if [[ -n $last_ts ]] && last_epoch=$(date -d "$last_ts" +%s 2>/dev/null); then
+                now_s=$(date +%s)
+                if (( now_s - last_epoch < PUSH_INTERVAL_HOURS * 3600 )); then
+                    log "远端最后心跳（$last_ts）距今不足 $PUSH_INTERVAL_HOURS 小时，跳过。"
+                    return 2
+                fi
+            fi
         fi
 
         if [[ -n $existing ]] && printf '%s' "$existing" | jq -e 'type == "array"' >/dev/null 2>&1; then
@@ -297,16 +309,7 @@ cmd_run() {
         exit 1
     fi
 
-    local now last token sn sstate payload remote_path
-    now=$(date +%s)
-    last=0
-    if [[ -r $STATE_FILE ]]; then
-        last=$(jq -r '.lastRun // 0' "$STATE_FILE" 2>/dev/null) || last=0
-    fi
-    if [[ $force != "--force" && $(( now - last )) -lt $(( PUSH_INTERVAL_HOURS * 3600 )) ]]; then
-        log "离上次上报不足 $PUSH_INTERVAL_HOURS 小时，跳过。"
-        exit 0
-    fi
+    local token sn sstate payload remote_path rc
 
     if ! token=$(get_token); then
         log "未配置 GitCode token（gitcode.token 或 gitcode.token_file）" ERROR
@@ -319,35 +322,34 @@ cmd_run() {
     remote_path=$(remote_path_for "$sn")
 
     log "开始上报: SN=$sn 资产=$ASSET 工号=$EMPLOYEE 状态=$sstate"
-    if push_heartbeat "$remote_path" "$payload" "$token"; then
-        jq -n --argjson t "$now" '{lastRun:$t}' > "$STATE_FILE"
-        log "心跳已上报完成，写入状态文件。"
-    else
-        log "执行失败：心跳未上报" ERROR
-        exit 1
-    fi
+    rc=0
+    push_heartbeat "$remote_path" "$payload" "$token" "$force" || rc=$?
+    case $rc in
+        0) log "心跳已上报完成。" ;;
+        2) exit 0 ;; # throttled against the remote state — already logged
+        *)
+            log "执行失败：心跳未上报" ERROR
+            exit 1
+            ;;
+    esac
 }
 
 cmd_status() {
-    local sn sstate token_status last=0 now payload remote_path
+    local sn sstate token_status payload remote_path
     sn=$(get_serial)
     sstate=$(session_state)
     if get_token >/dev/null 2>&1; then token_status="ok"; else token_status="missing"; fi
-    if [[ -r $STATE_FILE ]]; then
-        last=$(jq -r '.lastRun // 0' "$STATE_FILE" 2>/dev/null) || last=0
-    fi
-    now=$(date +%s)
     payload=$(build_payload "$sn" "$sstate")
     remote_path=$(remote_path_for "$sn")
     echo "agent version : $AGENT_VERSION"
     echo "config        : $CONFIG_FILE"
-    echo "state file    : $STATE_FILE (ephemeral, per-login)"
     echo "serial        : $sn"
     echo "session state : $sstate"
     echo "asset code    : ${ASSET:-<未配置>}"
     echo "employee id   : ${EMPLOYEE:-<未配置>}"
     echo "token         : $token_status"
-    echo "last run      : $last ($(( now - last ))s ago)"
+    echo "throttle      : remote last heartbeat (≤ ${PUSH_INTERVAL_HOURS}h; --force overrides)"
+    echo "local state   : none — the agent writes no files"
     echo "remote path   : $remote_path"
     echo "payload       : $payload"
 }
@@ -370,7 +372,8 @@ $AGENT_NAME v$AGENT_VERSION — BlueZone 资产心跳 agent（Linux 无特权版
                                /etc/blue-agent/config.json）
   BLUE_AGENT_TOKEN             直接提供 token（优先于配置文件）
 
-节流状态: ${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/blue-agent/state.json（tmpfs，随登录会话）
+节流: 远端心跳数组最后一条的时间戳（默认 12h；--force 忽略）
+本地状态: 无 — 除自动清理的 HTTP 临时文件外，agent 不写任何本地文件
 日志: 标准输出（定时任务见 journalctl --user -u blue-agent）
 EOF
 }
