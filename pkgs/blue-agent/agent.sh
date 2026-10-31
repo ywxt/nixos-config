@@ -19,13 +19,30 @@
 #   * No interactive registration: the asset code and employee id are
 #     declared in secrets/ywxt-work-blue-agent.yaml (sops) and baked
 #     into the rendered config at activation.
+#   * The serial-number chain mirrors Get-SerialNumber of the original
+#     exactly: the `serial` hardcoded in the sops config first (the
+#     DMI sysfs files are root-only, so the unprivileged agent cannot
+#     read them directly), then the DMI system serial
+#     (Win32_ComputerSystemProduct), then the board serial (standing
+#     in for Win32_BIOS), then the chassis serial
+#     (Win32_SystemEnclosure), then "GUID-<machine-id>" (the
+#     original's MachineGuid fallback), else the same literal fallback
+#     string.
 #   * Idle detection uses logind (IdleHint / IdleSinceHint) instead of
 #     WTSQuerySessionInformation, fixing the original bug where info
 #     class 4 (WTSSessionId, a small session number) was compared
 #     against the idle threshold, so the state was always "active".
+#   * The remote heartbeat file is serialized exactly like the
+#     original's ConvertTo-Json (Windows PowerShell 5.1): CRLF line
+#     endings, 4-space indent steps, two spaces after each colon, no
+#     trailing newline — and a first push writes a bare object, the
+#     pipeline-unwrap artifact the fleet's Windows agents show in
+#     their status/ files. HTTP requests carry the original's headers
+#     (User-Agent "BlueZoneAgent").
 #   * When the remote heartbeat file cannot be parsed it is rebuilt as
 #     a fresh array, fixing the original bug that produced
-#     `[null, {...}]` entries.
+#     `[null, {...}]` entries; a parseable non-array document is
+#     wrapped like the original's @(...), not dropped.
 #   * `timeout_seconds` from the config is actually honoured (curl -m).
 #
 # Usage: blue-agent [run [--force] | status | help]
@@ -33,6 +50,8 @@ set -euo pipefail
 
 AGENT_NAME="blue-agent"
 AGENT_VERSION="1.0.0"
+# Get-ApiHeaders of the original, verbatim.
+AGENT_UA="BlueZoneAgent"
 
 # Config resolution: explicit override, sops-nix rendered template
 # (keep in sync with modules/blue-agent.nix), /etc fallback.
@@ -66,6 +85,8 @@ load_config() {
     local cfg
     cfg=$(cat "$CONFIG_FILE")
     API_ENDPOINT=$(jq -r '.gitcode.api_endpoint // "https://api.gitcode.com/api/v5"' <<<"$cfg")
+    # Get-ApiUri: $base.TrimEnd('/')
+    while [[ $API_ENDPOINT == */ ]]; do API_ENDPOINT=${API_ENDPOINT%/}; done
     OWNER=$(jq -r '.gitcode.owner // "SoftwareEngineering"' <<<"$cfg")
     REPO=$(jq -r '.gitcode.repo // "BlueZoneAssetManager"' <<<"$cfg")
     REMOTE_PATH_TEMPLATE=$(jq -r '.gitcode.remote_path // "status/{asset}.json"' <<<"$cfg")
@@ -76,8 +97,12 @@ load_config() {
     TIMEOUT_SECONDS=$(jq -r '.timeout_seconds // 60' <<<"$cfg")
     ASSET=$(jq -r '.asset_code // empty' <<<"$cfg")
     EMPLOYEE=$(jq -r '.employee_id // empty' <<<"$cfg")
-    ASSET=${ASSET^}
-    EMPLOYEE=$(normalize_employee "$EMPLOYEE")
+    SERIAL=$(jq -r '.serial // empty' <<<"$cfg")
+    # Get-Registration: config values are trimmed for validation; the
+    # asset code keeps its case (registration upper-cased it before
+    # saving; validation itself is case-insensitive, like -match).
+    ASSET=$(trim "$ASSET")
+    EMPLOYEE=$(normalize_employee "$(trim "$EMPLOYEE")")
 }
 
 # Token precedence: env override > inline token > token file.
@@ -95,25 +120,49 @@ get_token() {
 
 # ------------------------------------------------------------- identity --
 
-# Machine serial without privileges: DMI files are root-only on most
-# systems, so this usually falls back to /etc/machine-id.
+# Machine serial, mirroring Get-SerialNumber of the original: the
+# `serial` hardcoded in the sops config comes first (the DMI sysfs
+# files are root-only and unreadable without privileges), then the
+# DMI system serial (Win32_ComputerSystemProduct), then the board
+# serial (Win32_BIOS), then "GUID-<machine-id>" (the original's
+# MachineGuid fallback), else the same literal the original returns.
+# BLUE_AGENT_SERIAL_FILE overrides the source (for testing).
+# Values are trimmed exactly like the original's .Trim() — whitespace
+# at the ends only, interior preserved — and a source that trims to
+# empty falls through to the next, as Get-SerialNumber does.
+trim() {
+    local v=$1
+    v="${v#"${v%%[![:space:]]*}"}"
+    v="${v%"${v##*[![:space:]]}"}"
+    printf '%s' "$v"
+}
+
 get_serial() {
     local f v
-    for f in /sys/class/dmi/id/product_serial /sys/class/dmi/id/board_serial /sys/class/dmi/id/product_uuid; do
-        if [[ -r $f ]]; then
-            v=$(<"$f")
-            v=${v//$'\n'/}
-            case $v in
-                "" | None | "Default string" | "To Be Filled By O.E.M." | "Unknown") ;;
-                *) printf '%s' "$v"; return 0 ;;
-            esac
+    v=$(trim "${SERIAL:-}")
+    if [[ -n $v ]]; then
+        printf '%s' "$v"
+        return 0
+    fi
+    for f in \
+        "${BLUE_AGENT_SERIAL_FILE:-}" \
+        /sys/class/dmi/id/product_serial \
+        /sys/class/dmi/id/board_serial \
+        /sys/class/dmi/id/chassis_serial
+    do
+        [[ -n $f && -r $f ]] || continue
+        v=$(<"$f")
+        v=$(trim "$v")
+        if [[ -n $v ]]; then
+            printf '%s' "$v"
+            return 0
         fi
     done
     if [[ -r /etc/machine-id ]]; then
         printf 'GUID-%s' "$(</etc/machine-id)"
         return 0
     fi
-    uname -n
+    printf '无法获取机器SN号'
 }
 
 # --------------------------------------------------------- idle detection --
@@ -162,7 +211,7 @@ session_state() {
 
 # ------------------------------------------------------------ validation --
 
-asset_re='^[AM][0-9]{9,12}$'
+asset_re='^[AaMm][0-9]{9,12}$' # -match is case-insensitive
 employee_re='^(300[0-9]{5}|00[0-9]{6}|[0-9]{6})$'
 
 valid_asset() { [[ $1 =~ $asset_re ]]; }
@@ -188,15 +237,45 @@ build_payload() {
         --arg emp "$EMPLOYEE" \
         --arg ts "$(date '+%Y-%m-%dT%H:%M:%S%:z')" \
         --arg state "$sstate" \
-        --arg ver "$AGENT_VERSION" \
-        '{sn:$sn, asset_code:$asset, employee_id:$emp, timestamp:$ts, session_state:$state, agent_version:$ver}'
+        '{sn:$sn, asset_code:$asset, employee_id:$emp, timestamp:$ts, session_state:$state}'
 }
 
 remote_path_for() {
     local sn=$1 path=$REMOTE_PATH_TEMPLATE
     path=${path//'{machine}'/$sn}
     path=${path//'{asset}'/$ASSET}
+    # main: .TrimStart('/')
+    while [[ $path == /* ]]; do path=${path#/}; done
     printf '%s' "$path"
+}
+
+# Serialize a JSON document the way the original's ConvertTo-Json does
+# (Windows PowerShell 5.1): CRLF line endings, 4-space indent steps,
+# two spaces after each colon, no trailing newline. Verified
+# byte-for-byte against the status/ files the fleet's Windows agents
+# write.
+ps_serialize() {
+    jq -r '
+      def e: tojson;
+      if type == "array" then
+        if length == 0 then "[]"
+        else
+          "[\r\n" +
+          ([.[] |
+            "    {\r\n" +
+            (to_entries | map("        " + (.key | e) + ":  " + (.value | e)) | join(",\r\n")) +
+            "\r\n    }"
+          ] | join(",\r\n")) +
+          "\r\n]"
+        end
+      elif type == "object" then
+        "{\r\n" +
+        (to_entries | map("    " + (.key | e) + ":  " + (.value | e)) | join(",\r\n")) +
+        "\r\n}"
+      else
+        tojson
+      end
+    '
 }
 
 # Append one heartbeat to the remote JSON array via the GitCode
@@ -208,7 +287,7 @@ remote_path_for() {
 # not pass --force.
 push_heartbeat() {
     local remote_path=$1 payload=$2 token=$3 force=$4
-    local uri attempt code sha content_b64 existing newjson new_b64 body method n resp
+    local uri attempt code sha content_b64 existing kind newjson new_text new_b64 body method n resp
     local last_ts last_epoch now_s
     uri="$API_ENDPOINT/repos/$OWNER/$REPO/contents/$remote_path?access_token=$token"
 
@@ -216,7 +295,7 @@ push_heartbeat() {
         sha=""
         existing=""
         code=$(curl -sS -m "$TIMEOUT_SECONDS" \
-            -H "User-Agent: $AGENT_NAME" -H "Accept: application/json" \
+            -H "User-Agent: $AGENT_UA" -H "Content-Type: application/json" \
             -o "$GET_FILE" -w '%{http_code}' "$uri" 2>/dev/null) || code=000
 
         if [[ $code == 200 ]]; then
@@ -228,7 +307,7 @@ push_heartbeat() {
         elif [[ $code == 404 ]]; then
             : # first heartbeat for this asset — create below
         elif [[ $code == 000 || $code -ge 500 ]]; then
-            n=$attempt
+            n=$((attempt - 1))
             if (( n > 4 )); then n=4; fi
             log "网络波动(HTTP=$code)，等待 $((2 ** n))s 后重试（第 $attempt/10 轮）" WARN
             sleep $((2 ** n))
@@ -252,35 +331,57 @@ push_heartbeat() {
             fi
         fi
 
-        if [[ -n $existing ]] && printf '%s' "$existing" | jq -e 'type == "array"' >/dev/null 2>&1; then
-            newjson=$(jq -c --argjson h "$payload" '. + [$h]' <<<"$existing")
+        if [[ -z $existing ]]; then
+            # Push-Heartbeat on a missing file: `@($Heartbeat) |
+            # ConvertTo-Json` — the pipeline unwraps the single
+            # element, so the first push writes a bare object (the
+            # fleet's first-push files look exactly like this).
+            newjson=$payload
         else
-            if [[ -n $existing ]]; then
-                log "现有远端内容解析失败，整体重建" WARN
-            fi
-            newjson=$(jq -cn --argjson h "$payload" '[$h]')
+            kind=$(jq -r 'type' <<<"$existing" 2>/dev/null) || kind="unparseable"
+            case $kind in
+                array)
+                    newjson=$(jq -c --argjson h "$payload" \
+                        '. + [$h] | if length == 1 then .[0] else . end' <<<"$existing")
+                    ;;
+                null | unparseable)
+                    # Rebuild from scratch: the original emits
+                    # `[null, …]` here — kept as a deliberate fix.
+                    if [[ $kind == unparseable ]]; then
+                        log "现有远端内容解析失败，整体重建" WARN
+                    fi
+                    newjson=$(jq -cn --argjson h "$payload" '[$h]')
+                    ;;
+                *)
+                    # Parseable non-array document: @(...) keeps it as
+                    # the first element, like the original.
+                    newjson=$(jq -cn --argjson h "$payload" --argjson e "$existing" '[$e, $h]')
+                    ;;
+            esac
         fi
 
-        new_b64=$(printf '%s' "$newjson" | base64 -w0)
+        new_text=$(ps_serialize <<<"$newjson")
+        new_b64=$(printf '%s' "$new_text" | base64 -w0)
         body=$(jq -cn --arg c "$new_b64" --arg m "heartbeat append" --arg s "$sha" \
             'if $s == "" then {content:$c, message:$m} else {content:$c, message:$m, sha:$s} end')
 
         method=PUT
         if [[ -z $sha ]]; then method=POST; fi
         code=$(curl -sS -m "$TIMEOUT_SECONDS" -X "$method" \
-            -H "User-Agent: $AGENT_NAME" \
-            -H "Content-Type: application/json" -H "Accept: application/json" \
+            -H "User-Agent: $AGENT_UA" -H "Content-Type: application/json" \
             -d "$body" -o "$PUT_FILE" -w '%{http_code}' "$uri" 2>/dev/null) || code=000
 
         if [[ $code == 200 || $code == 201 ]]; then
             return 0
         elif [[ $code == 409 || $code == 422 ]]; then
-            log "sha 冲突(HTTP=$code)，重取后重试（第 $attempt/10 轮）" WARN
+            log "sha 冲突，重取后重试（第 $attempt/10 轮）" WARN
             continue
         elif [[ $code == 000 || $code -ge 500 ]]; then
-            n=$attempt
+            n=$((attempt - 1))
             if (( n > 4 )); then n=4; fi
-            log "写入失败(HTTP=$code)，等待 $((2 ** n))s 后重试（第 $attempt/10 轮）" WARN
+            resp=$(head -c 300 "$PUT_FILE" 2>/dev/null) || resp=""
+            log "heartbeat 写入失败 HTTP=$code body=$resp URI=$uri" WARN
+            log "网络波动，等待 $((2 ** n))s 后重试（第 $attempt/10 轮）" WARN
             sleep $((2 ** n))
             continue
         else
@@ -289,7 +390,7 @@ push_heartbeat() {
             return 1
         fi
     done
-    log "heartbeat 上报失败：10 轮重试后仍失败" ERROR
+    log "heartbeat 上报失败：10 轮重试后仍失败。" ERROR
     return 1
 }
 
@@ -297,6 +398,8 @@ push_heartbeat() {
 
 cmd_run() {
     local force=${1:-}
+
+    log "agent 启动 (v$AGENT_VERSION)"
 
     # Registration is declarative (sops): invalid values are a config
     # error, not something to prompt for.
@@ -328,7 +431,7 @@ cmd_run() {
         0) log "心跳已上报完成。" ;;
         2) exit 0 ;; # throttled against the remote state — already logged
         *)
-            log "执行失败：心跳未上报" ERROR
+            log "执行失败: 心跳未上报" ERROR
             exit 1
             ;;
     esac

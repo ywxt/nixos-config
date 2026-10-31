@@ -10,12 +10,16 @@
 #
 #   * a systemd *user* timer (not a SYSTEM task) drives the heartbeat;
 #   * the entire configuration — GitCode endpoint, token, and the
-#     hardcoded asset code / employee id — is rendered by sops-nix into
+#     hardcoded asset code / employee id / hardware serial — is
+#     rendered by sops-nix into
 #     /run/secrets/rendered/blue-agent.json (0400, owned by the
 #     auto-detected agent user); nothing lives in /etc or $HOME;
 #   * the agent keeps no local state: the 12h throttle uses the last
 #     timestamp in the remote heartbeat array; logging goes to the
 #     journal.
+#   * the hardware serial is hardcoded in the sops file (the DMI sysfs
+#     files are root-only, so the unprivileged agent cannot read what
+#     the original read via WMI under SYSTEM);
 #
 # Registration is declarative: edit secrets/<host>-blue-agent.yaml with
 # sops-secrets and rebuild — there is no interactive registration and
@@ -60,7 +64,7 @@ in
       description = "Per-request HTTP timeout (honoured via curl -m; the Windows agent defined but never used this).";
     };
 
-    # sops file with `blue-agent: {token, asset-code, employee-id}`.
+    # sops file with `blue-agent: {token, asset-code, employee-id, serial}`.
     # Kept in sync with the default search path of the agent script:
     # /run/secrets/rendered/blue-agent.json.
     secretsFile = lib.mkOption {
@@ -131,6 +135,11 @@ in
           owner = agentUser;
           mode = "0400";
         };
+        "blue-agent/serial" = {
+          sopsFile = cfg.secretsFile;
+          owner = agentUser;
+          mode = "0400";
+        };
       };
 
       # The complete agent config, rendered at activation. Placeholder
@@ -152,6 +161,7 @@ in
           timeout_seconds = cfg.timeoutSeconds;
           asset_code = config.sops.placeholder."blue-agent/asset-code";
           employee_id = config.sops.placeholder."blue-agent/employee-id";
+          serial = config.sops.placeholder."blue-agent/serial";
         };
       };
     };
