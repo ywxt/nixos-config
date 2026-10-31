@@ -14,9 +14,12 @@
 #     rendered by sops-nix into
 #     /run/secrets/rendered/blue-agent.json (0400, owned by the
 #     auto-detected agent user); nothing lives in /etc or $HOME;
-#   * the agent keeps no local state: the 12h throttle uses the last
-#     timestamp in the remote heartbeat array; logging goes to the
-#     journal.
+#   * the agent keeps no state of its own: the 12h throttle uses the
+#     last timestamp in the remote heartbeat array. The one persistent
+#     file is the run log (XDG_STATE_HOME/blue-agent/run.log), which
+#     the agent uploads to asset_run_log/<asset>_run.log after each
+#     heartbeat — the counterpart of the original's log\run.log and
+#     Push-RunLog; console output goes to the journal.
 #   * the hardware serial is hardcoded in the sops file (the DMI sysfs
 #     files are root-only, so the unprivileged agent cannot read what
 #     the original read via WMI under SYSTEM);
@@ -61,7 +64,7 @@ in
     timeoutSeconds = lib.mkOption {
       type = lib.types.ints.positive;
       default = 60;
-      description = "Per-request HTTP timeout (honoured via curl -m; the Windows agent defined but never used this).";
+      description = "Per-request HTTP timeout (honoured by the agent; the Windows agent defined but never used this).";
     };
 
     # sops file with `blue-agent: {token, asset-code, employee-id, serial}`.
@@ -181,8 +184,8 @@ in
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnCalendar = cfg.schedule;
-        # Catches up missed windows (the original used a second
-        # on-boot SYSTEM task for this).
+        # The original's Repair-TaskStartWhenAvailable (v0.9.21):
+        # catch up a window missed while the machine slept.
         Persistent = true;
         RandomizedDelaySec = "5m";
       };

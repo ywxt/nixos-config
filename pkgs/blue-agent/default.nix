@@ -2,33 +2,23 @@
   lib,
   stdenvNoCC,
   makeWrapper,
-  bash,
-  coreutils,
-  curl,
-  gawk,
-  gnused,
-  jq,
+  python3,
   systemd,
 }:
 
-# Keep in sync with AGENT_VERSION in agent.sh.
+# Keep in sync with AGENT_VERSION in agent.py.
 let
-  # loginctl comes from systemd; everything else is standard CLI tooling.
+  # The agent is pure-stdlib Python; loginctl comes from systemd.
   runtimeDeps = [
-    bash
-    coreutils
-    curl
-    gawk
-    gnused
-    jq
+    python3
     systemd
   ];
 in
 stdenvNoCC.mkDerivation {
   pname = "blue-agent";
-  version = "1.0.0";
+  version = "0.9.21";
 
-  src = ./agent.sh;
+  src = ./agent.py;
 
   nativeBuildInputs = [ makeWrapper ];
 
