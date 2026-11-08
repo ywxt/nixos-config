@@ -7,7 +7,8 @@
       support32Bit = true;
     };
     pulse.enable = true;
-    jack.enable = true;
+    # No `jack.enable` — deprecated for global LD_LIBRARY_PATH impurity.
+    # Run JACK-needing apps through the `pw-jack` wrapper if ever needed.
     wireplumber.enable = true;
   };
 }
